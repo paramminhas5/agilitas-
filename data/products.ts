@@ -1,298 +1,410 @@
-export type EvidenceLevel = "KNOWN PRINCIPLE" | "MARKET PRECEDENT" | "DESIGN TARGET";
+// ─── TYPES ───────────────────────────────────────────────────────────────────
 
-export type Source = {
-  id: string;
-  organisation: string;
-  title: string;
-  year: string;
-  url: string;
-  note: string;
-};
+export type Brand = "LOTTO" | "ONE8";
 
-export type Product = {
+export type Technology = {
   id: string;
-  order: string;
-  brand: "LOTTO" | "ONE8";
   name: string;
-  family: string;
-  line: string;
-  thesis: string;
-  note: string;
-  accent: string;
-  surface: string;
-  palette: [string, string, string];
-  art: "court" | "weather" | "threshold" | "cricket" | "train" | "after";
-  purposes: Array<{
-    code: string;
-    title: string;
-    copy: string;
-  }>;
-  systems: Array<{
-    name: string;
-    level: EvidenceLevel;
-    copy: string;
-    sources: string[];
-  }>;
+  tagline: string;
+  description: string;
+  detail: string;
 };
 
-export const sources: Source[] = [
+export type Shoe = {
+  id: string;
+  order: number;
+  brand: Brand;
+  name: string;
+  subtitle: string;
+  whyWeMadeIt: string;
+  purposeA: { label: string; description: string };
+  purposeB: { label: string; description: string };
+  purposeS: { label: string; description: string };
+  value: string;
+  features: string;
+  whoItsFor: string;
+  technologies: string[];
+  accent: string;
+  palette: [string, string, string];
+};
+
+export type Campaign = {
+  id: string;
+  name: string;
+  shoe: string;
+  tagline: string;
+  description: string;
+  film: string;
+  gtm: string;
+};
+
+
+// ─── TECHNOLOGIES ────────────────────────────────────────────────────────────
+
+export const technologies: Technology[] = [
   {
-    id: "imd-2025",
-    organisation: "India Meteorological Department",
-    title: "Salient features of the Southwest Monsoon 2025",
-    year: "2025",
-    url: "https://internal.imd.gov.in/press_release/20250930_pr_4343.pdf",
-    note: "India received 108% of long-period-average rainfall during the June–September 2025 southwest monsoon. This supports designing a real wet-season product; it does not validate any shoe claim.",
+    id: "ground-last",
+    name: "GROUND LAST",
+    tagline: "The foundation, in every shoe",
+    description: "Cut from real Indian foot-scan data — wider forefoot, held heel — not a generic Western block.",
+    detail: "The one thing a competitor can't buy off a supplier's shelf. The last is the foot-shaped mould a shoe is built around.",
   },
   {
-    id: "iso-vapour",
-    organisation: "ISO",
-    title: "ISO 17699 — Water-vapour permeability and absorption",
-    year: "2003 / current listing 2024",
-    url: "https://www.iso.org/standard/31470.html",
-    note: "A recognised way to assess upper and lining moisture behaviour. Our product needs measured results before publishing a breathability number.",
+    id: "grip-rubber",
+    name: "GRIP RUBBER",
+    tagline: "Traction and durability; a family, not one compound",
+    description: "A graphene-infused rubber. Two tunings from the same base — Hard for cement durability, Soft for maximum stick.",
+    detail: "Independently tested as 50% stronger, 50% more elastic, 50% harder-wearing. One platform, two opposite jobs.",
   },
   {
-    id: "iso-abrasion",
-    organisation: "ISO",
-    title: "ISO 20871 — Outsole abrasion resistance",
-    year: "2018",
-    url: "https://www.iso.org/standard/63230.html",
-    note: "Relevant to cement-court and outdoor outsole durability. The concept specifies the test; no result is claimed yet.",
+    id: "two-ground-sole",
+    name: "TWO-GROUND SOLE",
+    tagline: "For wet and rocky ground at once",
+    description: "One outsole, two grip zones: soft finely-cut for wet surfaces, firm deep-lugged for loose rocky ground.",
+    detail: "Most shoes make you pick one. This handles both. The heart of Traktor, and re-tuned for turf grip in NightShift.",
   },
   {
-    id: "iso-flex",
-    organisation: "ISO",
-    title: "ISO 17707 — Outsole flex resistance",
-    year: "2005",
-    url: "https://www.iso.org/standard/31478.html",
-    note: "Assesses cut growth under repeated flexing. Relevant to the everyday, training and returnable-sole systems.",
+    id: "dry-system",
+    name: "DRY SYSTEM",
+    tagline: "Beating the monsoon, honestly",
+    description: "Two modes. Drain mode is a real mechanical pump. Seal mode zips in a waterproof Gore-Tex liner.",
+    detail: "On the box: dry by morning (passive). At drying stations: under two hours. Two true claims, two numbers.",
+  },
+
+  {
+    id: "fold-heel",
+    name: "FOLD HEEL",
+    tagline: "For the way we take shoes off",
+    description: "A reinforced heel that folds flat when you step on it and springs back, rated for tens of thousands of cycles.",
+    detail: "Turns 'crushing the back of your shoe' from damage into a feature. Printed cycle rating on the shoe.",
   },
   {
-    id: "iso-slip",
-    organisation: "ISO",
-    title: "ISO 24267 — Coefficient of friction for footwear and sole components",
-    year: "2020",
-    url: "https://www.iso.org/standard/78252.html",
-    note: "A laboratory test method for friction under walking-step conditions. Sport-specific grip still needs its own protocol.",
+    id: "second-skin",
+    name: "SECOND SKIN",
+    tagline: "The sole that changes as it ages",
+    description: "A second tread pattern moulded under the first. As the top wears down, the second surfaces.",
+    detail: "A court sole quietly becomes a street sole by around month fourteen. You didn't buy a second shoe. You grew one.",
   },
   {
-    id: "gore-invisible",
-    organisation: "GORE‑TEX",
-    title: "Invisible Fit footwear technology",
-    year: "Available before 2025",
-    url: "https://www.gore-tex.com/technology/gore-tex-products/invisible-fit-footwear",
-    note: "A market precedent for directly bonded waterproof laminates with reduced water pickup and quicker dry-out. It is a benchmark, not a claimed partnership or component.",
+    id: "resole",
+    name: "RESOLE",
+    tagline: "Built to last, on the shoes that can",
+    description: "A genuinely resoleable, separable sole — the real principle behind Red Wing and Blundstone.",
+    detail: "Only on shoes whose uppers can last that long. Performance shoes get a trade-in program instead.",
   },
   {
-    id: "gore-surround",
-    organisation: "GORE‑TEX",
-    title: "SURROUND footwear technology",
-    year: "Available before 2025",
-    url: "https://www.gore-tex.com/en_uk/technology/gore-tex-products/surround",
-    note: "A market precedent for moving heat and moisture through channels around and beneath the foot while retaining a waterproof construction.",
+    id: "foot-sensor",
+    name: "FOOT SENSOR",
+    tagline: "The data layer",
+    description: "A small pressure sensor in the sole linked to an app. Tracks training load over time.",
+    detail: "The literal mechanism behind 'learn with Lotto, get better with one8.' Uses injury-risk training-load ratio.",
   },
   {
-    id: "court-floor",
-    organisation: "PLOS ONE / PMC",
-    title: "Influence of sports flooring and shoes on impact forces and performance during jump tasks",
-    year: "2017",
-    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC5636165/",
-    note: "Shows that both flooring and footwear influence impact-force variables and performance in jump tasks. It does not justify an injury-prevention promise.",
+    id: "fresh-lining",
+    name: "FRESH LINING",
+    tagline: "The one everyone forgets, that everyone needs",
+    description: "Silver-ion antimicrobial treatment on the footbed and lining. Kills odour and bacteria.",
+    detail: "In a hot, humid country where feet sweat all day, it kills odour instead of masking it.",
   },
   {
-    id: "badminton-heel",
-    organisation: "Journal of Sports Sciences / PMC",
-    title: "Shoe heel design, ground reaction forces and knee moments in badminton lunges",
-    year: "2017",
-    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC5363935/",
-    note: "Supports treating heel geometry and cushioning as real design variables for lunge-dominant court movement.",
-  },
-  {
-    id: "basket-stiffness",
-    organisation: "Sports Medicine / PMC",
-    title: "Modifying basketball-footwear midsole stiffness affects foot and ankle biomechanics",
-    year: "2019",
-    url: "https://pmc.ncbi.nlm.nih.gov/articles/PMC6816293/",
-    note: "Supports stiffness as an engineering variable. The correct value for this concept must be found by prototyping and player testing.",
-  },
-  {
-    id: "flyease",
-    organisation: "Nike",
-    title: "Go FlyEase hands-free shoe",
-    year: "2021",
-    url: "https://about.nike.com/en/newsroom/releases/nike-go-flyease-hands-free-shoe",
-    note: "A market precedent for a bi-stable hinge that holds a shoe open and closed. THRESHOLD uses the behaviour as a brief, not the mechanism or protected design.",
-  },
-  {
-    id: "kizik",
-    organisation: "Kizik / HandsFree Labs",
-    title: "Hands-free structured-heel footwear",
-    year: "Available before 2025",
-    url: "https://kizik.com/pages/about-us",
-    note: "A second precedent proving that repeatable hands-free entry can be a footwear category. A new mechanism still requires freedom-to-operate review.",
-  },
-  {
-    id: "vibram-repair",
-    organisation: "Vibram",
-    title: "Repair If You Care / outsole repair",
-    year: "Available before 2025",
-    url: "https://us.vibram.com/on/demandware.store/Sites-VibramUS-Site/en/SoleFactor-Show",
-    note: "Evidence that organised outsole repair and resoling can operate as a branded service. Our proposal returns the shoe to the maker rather than relying on a nostalgia-led cobbler story.",
-  },
-  {
-    id: "wear-guidance",
-    organisation: "ASICS",
-    title: "How to know when to replace running shoes",
-    year: "2024",
-    url: "https://www.asics.com/us/en-us/blog/how-to-know-it-s-time-to-replace-my-running-shoes/",
-    note: "A market example of wear guidance. It reinforces the need to make end-of-service legible; it does not establish one universal mileage for every shoe.",
+    id: "heat-stable-foam",
+    name: "HEAT-STABLE FOAM",
+    tagline: "Needed here more than anywhere",
+    description: "Supercritical-gas-blown formula that holds rebound across a much wider temperature range.",
+    detail: "Ordinary foam softens in Indian summers. This holds its bounce from dawn to peak afternoon heat.",
   },
 ];
 
-export const products: Product[] = [
+
+// ─── SHOES ───────────────────────────────────────────────────────────────────
+
+export const shoes: Shoe[] = [
   {
-    id: "six-ten",
-    order: "01",
+    id: "alleys",
+    order: 1,
     brand: "LOTTO",
-    name: "6:10",
-    family: "CEMENT COURT",
-    line: "The court is already open.",
-    thesis: "One low court shoe for the three games that share the same rectangle before the city wakes up.",
-    note: "Named for the time, not the athlete. Built around an outdoor court at 6:10 a.m.",
-    accent: "#ff5429",
-    surface: "SUN-WARMED CEMENT",
-    palette: ["#d86f52", "#f0b777", "#6f514d"],
-    art: "court",
-    purposes: [
-      { code: "A", title: "BASKETBALL", copy: "Cushioning and outsole rubber specified for repeated jumps and abrasive outdoor cement—not an indoor-only foam package." },
-      { code: "B", title: "VOLLEYBALL + BADMINTON", copy: "A broad lateral outrigger, tuned torsional bridge and heel geometry for shuffles, plants and lunges." },
-      { code: "C", title: "THE WALK HOME", copy: "Low, visually quiet and flexible enough to leave the court on foot. The third use is ordinary on purpose." },
-    ],
-    systems: [
-      { name: "CEMENT COMPOUND", level: "DESIGN TARGET", copy: "High-abrasion rubber with broad channels that release grit rather than holding it.", sources: ["iso-abrasion"] },
-      { name: "LATERAL FRAME", level: "KNOWN PRINCIPLE", copy: "Midsole stiffness, heel geometry and floor construction are meaningful biomechanical variables; their final values require player trials.", sources: ["court-floor", "badminton-heel", "basket-stiffness"] },
-      { name: "ORANGE WEAR LINE", level: "DESIGN TARGET", copy: "A contrasting layer appears only as designated tread zones approach their service limit.", sources: ["wear-guidance", "iso-abrasion"] },
-    ],
+    name: "ALLEYS",
+    subtitle: "The Court Shoe",
+    whyWeMadeIt: "Indian courts are cement, not sprung wood. Every court shoe here was tuned for a floor we don't have, and players' joints pay for it.",
+    purposeA: { label: "BASKETBALL ON CEMENT", description: "Cushioning and outsole built for repeated jumps on abrasive outdoor cement." },
+    purposeB: { label: "VOLLEYBALL + BADMINTON", description: "Same court, same shoe. Lateral stability for shuffles, plants and lunges." },
+    purposeS: { label: "THE WALK HOME", description: "Quiet and low enough to wear off the court all evening. Never comes off your foot." },
+    value: "One shoe for three court sports and the walk home — instead of a sports shoe you change out of.",
+    features: "Grip Rubber Hard survives cement grit; low stable build; Fold Heel for easy on-off; Second Skin sole reveals street tread over a year.",
+    whoItsFor: "The 6 a.m. player — books a half-court before work, plays four times a week, owns one pair.",
+    technologies: ["ground-last", "grip-rubber", "fold-heel", "second-skin"],
+    accent: "#FF6B35",
+    palette: ["#1a1a1a", "#FF6B35", "#2d2d2d"],
   },
   {
-    id: "june",
-    order: "02",
+    id: "traktor",
+    order: 2,
     brand: "LOTTO",
-    name: "JUNE",
-    family: "WEATHER SYSTEM",
-    line: "Dry. Shield. Drain.",
-    thesis: "A hot-weather shoe with a dockable rain layer—because waterproof and breathable are not the same brief.",
-    note: "The shell is a concept. Waterproof is not printed until the complete shoe passes a defined test.",
-    accent: "#ff5429",
-    surface: "MONSOON CONCRETE",
-    palette: ["#121416", "#2f3030", "#bb7a31"],
-    art: "weather",
-    purposes: [
-      { code: "A", title: "COMMUTE", copy: "A light, sealed weather shell docks under the sole rim when rain is the immediate problem." },
-      { code: "B", title: "ROUGH GROUND", copy: "With the shell off, protected mesh, toe film and a shallow lug field handle broken pavement and weekend trail." },
-      { code: "C", title: "DRY BY MORNING", copy: "The base shoe opens to air; footbed, shell and shoe separate. Drying time is measured and published—not described with an adjective." },
-    ],
-    systems: [
-      { name: "DOCKABLE WEATHER SHELL", level: "DESIGN TARGET", copy: "A removable membrane bootie creates a wet mode without sentencing the dry mode to a permanent barrier.", sources: ["gore-invisible", "gore-surround"] },
-      { name: "VENTED BASE", level: "KNOWN PRINCIPLE", copy: "Moisture behaviour can be measured through vapour permeability, absorption and desorption protocols.", sources: ["iso-vapour"] },
-      { name: "WET-SURFACE PROTOCOL", level: "DESIGN TARGET", copy: "Compound and tread must be tested on defined wet substrates. No blanket anti-slip promise.", sources: ["iso-slip", "imd-2025"] },
-    ],
+    name: "TRAKTOR",
+    subtitle: "The All-Weather Shoe",
+    whyWeMadeIt: "Everyone designs for the monsoon. Nobody designs for the whole Indian year, or for the broken 200 metres between your gate and the main road.",
+    purposeA: { label: "DAILY COMMUTE, ANY WEATHER", description: "Three weather modes — dry-heat venting, real pump drainage, zip-in seal for worst weeks." },
+    purposeB: { label: "WEEKEND TREKS & TRAVEL", description: "Two-Ground Sole handles rock and mud. One pair replaces summer, monsoon, and weekend shoes." },
+    purposeS: { label: "KILLS THE DECISION", description: "Lives by the door. Same shoe works whatever the sky does." },
+    value: "One pair replaces a summer shoe, a monsoon shoe, and a weekend shoe.",
+    features: "Three weather modes with Heat-Stable Foam, Dry System's real pump for rain, Two-Ground Sole that grips wet and rocky ground at once.",
+    whoItsFor: "Everybody, for a different reason each season. The least niche shoe in the line.",
+    technologies: ["ground-last", "dry-system", "two-ground-sole", "heat-stable-foam", "second-skin"],
+    accent: "#4ECDC4",
+    palette: ["#0a0f0e", "#4ECDC4", "#1a2f2c"],
   },
+
   {
-    id: "threshold",
-    order: "03",
+    id: "doorway",
+    order: 3,
     brand: "LOTTO",
-    name: "THRESHOLD",
-    family: "EVERYDAY TRAINER",
-    line: "Designed for the way it comes off.",
-    thesis: "A real training shoe with a returnable heel—secure in motion, hands-free at the door.",
-    note: "The mechanism starts with existing category proof, then has to earn its own patent and cycle test.",
-    accent: "#ff5429",
-    surface: "DOORWAY / GYM / STREET",
-    palette: ["#08090a", "#222529", "#3a3d40"],
-    art: "threshold",
-    purposes: [
-      { code: "A", title: "TRAIN", copy: "A broad heel and low stack for strength sessions and ordinary functional work." },
-      { code: "B", title: "WALK", copy: "Forefoot flex and a full rubber contact path for uneven pavements between sessions." },
-      { code: "C", title: "STEP OUT", copy: "The heel yields on entry and returns to hold. No hand, no crushed counter, no pretending the ritual does not exist." },
-    ],
-    systems: [
-      { name: "RETURN HEEL", level: "MARKET PRECEDENT", copy: "Hands-free hinges and structured flex heels already prove the category. This concept needs a distinct mechanism and freedom-to-operate review.", sources: ["flyease", "kizik"] },
-      { name: "CYCLE-RATED COUNTER", level: "DESIGN TARGET", copy: "The counter must be tested through repeated compression, return and retention—not validated by a launch film.", sources: ["iso-flex"] },
-      { name: "REPLACEABLE COLLAR", level: "DESIGN TARGET", copy: "The high-contact lining is designed as a removable service part rather than a reason to discard the whole upper.", sources: ["vibram-repair"] },
-    ],
+    name: "DOORWAY",
+    subtitle: "The Slip-Off Everyday Shoe",
+    whyWeMadeIt: "We crush our heels down a dozen times a day. That's not misuse — it's an unwritten requirement no brand ever designed for.",
+    purposeA: { label: "EVERYDAY WALK-AROUND", description: "Slip on and off at every doorway. Three seconds on, three seconds off." },
+    purposeB: { label: "GYM & FUNCTIONAL TRAINING", description: "Flat, firm base is genuinely good under load." },
+    purposeS: { label: "RESOLEABLE — LASTS YEARS", description: "The shoe you love actually lasts. Off in three seconds, on in three, for years." },
+    value: "The everyday shoe, the gym shoe, and a shoe that doesn't get thrown away — in one.",
+    features: "Fold Heel folds flat and springs back; Resole construction keeps it going; Fresh Lining stops smell worn barefoot-style all day.",
+    whoItsFor: "The whole country — the entry point to the brand.",
+    technologies: ["ground-last", "fold-heel", "resole", "fresh-lining"],
+    accent: "#F7DC6F",
+    palette: ["#1a1810", "#F7DC6F", "#2d2a1a"],
   },
   {
-    id: "twenty-two",
-    order: "04",
-    brand: "ONE8",
-    name: "22/ALL",
-    family: "CLUB CRICKET",
-    line: "The pitch is 22 yards. The game is everywhere.",
-    thesis: "A non-spike cricket platform designed around the three jobs a club player actually performs.",
-    note: "No invented ‘99%’ statistic. Surface distribution must be measured city by city through the Trial.",
-    accent: "#e61935",
-    surface: "MATTING / HARD GROUND / TURF",
-    palette: ["#111315", "#2c3031", "#474b49"],
-    art: "cricket",
-    purposes: [
-      { code: "A", title: "BAT", copy: "Medial forefoot flex and a replaceable toe-drag guard for repeated crease work." },
-      { code: "B", title: "BOWL", copy: "Role-specific left/right inserts are proposed for landing and propulsion zones; no performance benefit is claimed before trials." },
-      { code: "C", title: "FIELD", copy: "A low multi-directional lug field instead of spikes that assume prepared natural turf." },
-    ],
-    systems: [
-      { name: "ROLE-TUNED INSERTS", level: "DESIGN TARGET", copy: "Bat, bowl and field are different load cases. Modular inserts let the Trial test them without producing three shoes.", sources: ["iso-abrasion", "iso-flex"] },
-      { name: "GROUND LIBRARY", level: "DESIGN TARGET", copy: "Fifteen-city trials log substrate, wear and player movement before the outsole geometry is frozen.", sources: [] },
-      { name: "MAKER REBUILD", level: "MARKET PRECEDENT", copy: "When the outsole is done, it returns to the maker for a role-matched rebuild—not an anonymous replacement.", sources: ["vibram-repair"] },
-    ],
+    id: "nightshift",
+    order: 4,
+    brand: "LOTTO",
+    name: "NIGHTSHIFT",
+    subtitle: "The Turf & Padel Shoe",
+    whyWeMadeIt: "Five-a-side and padel are exploding, played late at night, and nobody makes a shoe for those surfaces.",
+    purposeA: { label: "FIVE-A-SIDE FOOTBALL ON TURF", description: "Dense multi-directional nub tread grips artificial turf without catching." },
+    purposeB: { label: "PADEL & FUTSAL", description: "Same surface family — one properly tuned tread serves both." },
+    purposeS: { label: "NIGHT-OUT READY", description: "Light and clean enough to wear straight from the 9 p.m. game into the rest of the night." },
+    value: "One turf shoe for two booming sports, plus a night-out shoe — instead of two specialist pairs.",
+    features: "Two-Ground Sole turf-tuned with multi-directional nubs; low fast build; Second Skin reveals fresh tread over time.",
+    whoItsFor: "The after-work city player who books the late slot.",
+    technologies: ["ground-last", "two-ground-sole", "second-skin"],
+    accent: "#BB86FC",
+    palette: ["#0d0a1a", "#BB86FC", "#1a1530"],
+  },
+
+  {
+    id: "beta",
+    order: 5,
+    brand: "LOTTO",
+    name: "BETA",
+    subtitle: "The Climbing Shoe, Rethought",
+    whyWeMadeIt: "Climbing is booming in Indian cities. Existing shoes are built painfully tight. Nobody has built a genuinely comfortable gym-and-boulder shoe.",
+    purposeA: { label: "GYM BOULDERING", description: "Real grip on plastic holds, no pain. Flat-to-moderate last — toes sit strong but not curled." },
+    purposeB: { label: "WALK TO & FROM THE GYM", description: "A normal, comfortable shoe you can keep on." },
+    purposeS: { label: "MONSOON GRIP", description: "Soft sticky sole is excellent on wet tile and stairs all monsoon — earns its place year-round." },
+    value: "A climbing shoe you can actually wear to the gym and home — one shoe, not a painful pair you carry in a bag.",
+    features: "Flat comfortable last; Grip Rubber Soft for stick; Fresh Lining for shared rental pairs.",
+    whoItsFor: "The new and regular gym climber — the 95% the industry has ignored.",
+    technologies: ["ground-last", "grip-rubber", "fresh-lining"],
+    accent: "#00E676",
+    palette: ["#0a1a0e", "#00E676", "#1a2d1e"],
   },
   {
-    id: "tenfold",
-    order: "05",
+    id: "session",
+    order: 6,
+    brand: "LOTTO",
+    name: "SESSION",
+    subtitle: "The Skate & Lifestyle Shoe",
+    whyWeMadeIt: "Only a small fraction of people who own a skate shoe have ever skated in one. We build the real thing and let both audiences have it.",
+    purposeA: { label: "GENUINE SKATING", description: "Reinforced suede exactly where a skate shoe wears through first." },
+    purposeB: { label: "EVERYDAY STREET & LIFESTYLE", description: "How most people will actually wear it — Lotto's cleanest everyday shoe." },
+    purposeS: { label: "WORN = INTENTIONAL", description: "Second Skin reveals a fresh pattern at the ollie zone as it wears. A beaten shoe looks intentional." },
+    value: "A credible skate shoe and Lotto's cleanest everyday lifestyle shoe — one object, two lives.",
+    features: "Genuine vulcanized construction; reinforced medial forefoot; Resole so a favourite pair lasts; Second Skin.",
+    whoItsFor: "Skaters for credibility; everyone else for volume. Lotto's lifestyle flagship.",
+    technologies: ["ground-last", "second-skin", "resole"],
+    accent: "#FF4081",
+    palette: ["#1a0a10", "#FF4081", "#2d1520"],
+  },
+
+  {
+    id: "reverse",
+    order: 7,
     brand: "ONE8",
-    name: "TENFOLD",
-    family: "TRAINING",
-    line: "You train more than you play.",
-    thesis: "A split-platform trainer: quiet under load, free at the forefoot, contained when movement turns sideways.",
-    note: "It is not a running shoe made tougher. It begins with the gym floor and works outward.",
-    accent: "#e61935",
-    surface: "GYM RUBBER / TRACK EDGE / ROAD",
-    palette: ["#0a0a0b", "#24201e", "#b57b36"],
-    art: "train",
-    purposes: [
-      { code: "A", title: "LIFT", copy: "A broad, minimally compressible heel gives loaded work a calmer foundation." },
-      { code: "B", title: "SPRINT + AGILITY", copy: "A decoupled forefoot flexes for short efforts while a lateral frame contains change of direction." },
-      { code: "C", title: "GET THERE IN IT", copy: "Full-rubber durability, dust-tolerant mesh and a serviceable collar keep it out of the special-shoe bag." },
-    ],
-    systems: [
-      { name: "SPLIT PLATFORM", level: "DESIGN TARGET", copy: "Heel and forefoot are engineered as different zones rather than one uniform running-foam slab.", sources: ["basket-stiffness"] },
-      { name: "ROPE + DUST GUARD", level: "DESIGN TARGET", copy: "A replaceable medial skin protects the frequent abrasion zone and can carry the batch code visibly.", sources: ["iso-abrasion"] },
-      { name: "FLEX MAP", level: "KNOWN PRINCIPLE", copy: "Bending stiffness changes lower-limb energetics; target values must follow task testing, not fashion.", sources: ["iso-flex"] },
-    ],
+    name: "REVERSE",
+    subtitle: "The Tennis-Ball Cricket Shoe — Flagship",
+    whyWeMadeIt: "The sport most of India actually plays — taped-ball cricket on cement and matting — has never had a shoe.",
+    purposeA: { label: "BOWLING ON CEMENT & MATTING", description: "Studs built for those grounds, not turf spikes. Rate-Sensitive Midsole: soft to move, firm on impact." },
+    purposeB: { label: "BATTING & FIELDING", description: "Same surfaces, same shoe. Multi-role design." },
+    purposeS: { label: "REPLACEABLE DRAG-TOE", description: "The one square inch every bowler destroys is replaceable. The shoe outlives the wear that kills every other cricket shoe." },
+    value: "One shoe for every role in the game, on the ground you actually have — that survives what normally ends a cricket shoe's life.",
+    features: "Moulded dual-density studs for cement/matting; Grip Rubber Hard; Rate-Sensitive Midsole; replaceable drag-toe.",
+    whoItsFor: "The 19–28 club and gully cricketer who's never owned a shoe built for his actual ground.",
+    technologies: ["ground-last", "grip-rubber"],
+    accent: "#E61935",
+    palette: ["#1a0a0d", "#E61935", "#2d1520"],
   },
   {
-    id: "after",
-    order: "06",
+    id: "train",
+    order: 8,
     brand: "ONE8",
-    name: "AFTER",
-    family: "OFF-FEET HOURS",
-    line: "Recovery is a time. Not a medical claim.",
-    thesis: "The most-worn thing in the bag deserves product design—even when the honest promise is simply comfort and repeat use.",
-    note: "No faster-recovery language. No therapeutic promise. Comfort, fit and durability are validated separately.",
-    accent: "#e61935",
-    surface: "DRESSING ROOM / TRAIN / HOME",
-    palette: ["#ded2b6", "#85432f", "#e1482d"],
-    art: "after",
-    purposes: [
-      { code: "A", title: "POST-LOAD", copy: "A generous platform, soft upper and adjustable volume for the minutes after training." },
-      { code: "B", title: "TRAVEL", copy: "Closed-toe protection, a washable footbed and enough outsole for stations, hotels and bus bays." },
-      { code: "C", title: "HOME", copy: "Hands-free entry and materials chosen for repeated, high-frequency use at the doorway." },
-    ],
-    systems: [
-      { name: "HONEST RECOVERY", level: "KNOWN PRINCIPLE", copy: "The category name describes when it is worn. We do not claim accelerated physiological recovery without clinical evidence.", sources: [] },
-      { name: "WASH / REPLACE / RETURN", level: "DESIGN TARGET", copy: "Footbed washes, collar replaces, outsole rebuilds. Each service event is designed before launch.", sources: ["vibram-repair", "iso-flex"] },
-      { name: "VISIBLE LIFE", level: "DESIGN TARGET", copy: "A wear line and dated maker stamp turn service history into the visual identity rather than hiding it.", sources: ["wear-guidance", "iso-abrasion"] },
-    ],
+    name: "TRAIN",
+    subtitle: "The Conditioning Shoe",
+    whyWeMadeIt: "Cricketers train far more than they play, almost always in a running shoe built for the wrong load.",
+    purposeA: { label: "LOADED LIFTING & GYM", description: "Midsole firms up under weight. A running shoe springs back — the opposite of what you want under a squat." },
+    purposeB: { label: "AGILITY & CONDITIONING", description: "Stays responsive for drills and lateral movement." },
+    purposeS: { label: "COACH ON YOUR FOOT", description: "Foot Sensor shows real training load in the app. Helps you not get injured." },
+    value: "The gym shoe, the agility shoe, and a coach on your foot — in one.",
+    features: "Rate-Sensitive Midsole; Fold Heel; Foot Sensor with injury-risk training-load tracker.",
+    whoItsFor: "The same player as Reverse, six days a week, in a room nobody's filming.",
+    technologies: ["ground-last", "fold-heel", "foot-sensor"],
+    accent: "#FF9100",
+    palette: ["#1a1208", "#FF9100", "#2d2010"],
+  },
+
+  {
+    id: "recover",
+    order: 9,
+    brand: "ONE8",
+    name: "RECOVER",
+    subtitle: "The Recovery Slide",
+    whyWeMadeIt: "Every cricketer owns a slide and wears it more hours than anything else — and nobody makes a good one.",
+    purposeA: { label: "RECOVERY AFTER TRAINING", description: "Foam built to soak up impact — absorbs load, the opposite of a running shoe." },
+    purposeB: { label: "TRAVEL & HOTEL-TO-GROUND", description: "Easiest thing to live in. Closed-toe protection." },
+    purposeS: { label: "HOME ALL EVENING", description: "A performance product hiding in your doorway. What you actually wear at home." },
+    value: "Recovery tool, travel shoe, and house slipper — properly engineered, finally.",
+    features: "Low-rebound absorbing foam; Resole; Fresh Lining; Heat-Stable Foam for summer.",
+    whoItsFor: "Everyone who just trained hard — then everyone in their house.",
+    technologies: ["ground-last", "resole", "fresh-lining", "heat-stable-foam"],
+    accent: "#7C4DFF",
+    palette: ["#0d0a1a", "#7C4DFF", "#1a1530"],
+  },
+  {
+    id: "everyday-mid",
+    order: 10,
+    brand: "LOTTO",
+    name: "EVERYDAY MID",
+    subtitle: "The Crossover",
+    whyWeMadeIt: "A leather, resoleable crossover shoe that reads as clothing, not sportswear. The natural home for a lifestyle-figure capsule.",
+    purposeA: { label: "LIFESTYLE CROSSOVER", description: "Reads as clothing, not sportswear. A musician's capsule, never an athlete's." },
+    purposeB: { label: "EVERYDAY DURABILITY", description: "Leather upper and resoleable construction built to last." },
+    purposeS: { label: "CULTURE VESSEL", description: "The natural home for an outside collaborator once the line's earned one." },
+    value: "The shoe that bridges sport and culture — designed to be resoiled and re-interpreted.",
+    features: "Leather construction; Resole system; Ground Last.",
+    whoItsFor: "The person who wants one shoe that works everywhere, dressed up or down.",
+    technologies: ["ground-last", "resole"],
+    accent: "#8D6E63",
+    palette: ["#1a1510", "#8D6E63", "#2d251a"],
+  },
+  {
+    id: "1973-premium",
+    order: 11,
+    brand: "LOTTO",
+    name: "1973",
+    subtitle: "The Premium Study",
+    whyWeMadeIt: "Same last, all texture, held for an outside collaborator once the line's earned one.",
+    purposeA: { label: "PREMIUM COLLABORATION", description: "Held for a design collaborator. All texture, all craft." },
+    purposeB: { label: "HERITAGE EXPRESSION", description: "The Lotto heritage (1973, the two-court mark) pointed at cement." },
+    purposeS: { label: "COLLECTOR'S PIECE", description: "Limited, earned, not manufactured scarcity." },
+    value: "The heritage shoe that proves the line has earned outside attention.",
+    features: "Ground Last; premium materials; held for collaborator interpretation.",
+    whoItsFor: "The collector and collaborator — earned, not manufactured.",
+    technologies: ["ground-last"],
+    accent: "#D4AF37",
+    palette: ["#1a1808", "#D4AF37", "#2d2a10"],
+  },
+];
+
+
+// ─── CAMPAIGNS ───────────────────────────────────────────────────────────────
+
+export const campaigns: Campaign[] = [
+  {
+    id: "the-trial",
+    name: "THE TRIAL",
+    shoe: "Reverse & Train",
+    tagline: "Nobody's born ready.",
+    description: "The one8 Combine — a free, travelling, Hyrox-style physical test in fifteen cities. Run the stations, get a 3D foot scan, walk away with your scorecard.",
+    film: "No hero, no celebrity. Ordinary people running stations, breathing hard, checking their own scorecards.",
+    gtm: "Free entry via app. Scorecard designed to be posted. Year-end national dataset published.",
+  },
+  {
+    id: "midnight-galli",
+    name: "MIDNIGHT GALLI",
+    shoe: "Reverse",
+    tagline: "The best gully cricket happens at night.",
+    description: "A floodlit night tournament in the real streets and lanes of six cities. Local house rules kept exactly as they are.",
+    film: "Shot like a boxing promo — tight, dark, loud. Each city's night scored live by a local rapper.",
+    gtm: "Winning gully gets repainted with a proper crease — becomes that year's city-exclusive Reverse colourway.",
+  },
+  {
+    id: "take-them-off",
+    name: "TAKE THEM OFF",
+    shoe: "Doorway",
+    tagline: "The heel-crush. A billion people. Every single day.",
+    description: "Forty seconds. Twelve doorways, twelve real homes. The same gesture, twelve times. No dialogue, no music.",
+    film: "Frame eleven: an ordinary shoe destroyed. Frame twelve: Fold Heel folds flat and springs back. Four seconds.",
+    gtm: "Runs in cinemas before interval — when the hall is about to stand up and do the exact gesture on screen.",
+  },
+  {
+    id: "10pm-league",
+    name: "THE 10 PM LEAGUE",
+    shoe: "NightShift",
+    tagline: "The odd, cheap, floodlit slots nobody's ever glamorised.",
+    description: "A real late-night five-a-side league at the venues people already book.",
+    film: "Phone-shot highlights, arguments, last-minute winners — never a polished brand film.",
+    gtm: "Team registration through app; live ladder; proper end-of-season final under lights.",
+  },
+
+  {
+    id: "beta-sessions",
+    name: "BETA SESSIONS",
+    shoe: "Beta",
+    tagline: "The sport's own culture of generosity.",
+    description: "Monthly nights at partner gyms where strong climbers openly coach beginners through a set problem.",
+    film: "Intimate and quiet — chalk, breath, the moment someone finally sticks a move.",
+    gtm: "Beta becomes the house rental shoe. First climbing shoe a new climber wears is ours.",
+  },
+  {
+    id: "sunday-session",
+    name: "SUNDAY SESSION",
+    shoe: "Session",
+    tagline: "India's skate scene was built bottom-up.",
+    description: "Fund real skatepark builds and repairs. Hold a Sunday open skate — filmed only by the skaters themselves.",
+    film: "We don't put our logo on the film. We built the park; that's the credit.",
+    gtm: "Parks are permanent and public. Session becomes the shoe the local scene actually wears because we earned it.",
+  },
+  {
+    id: "dry-by-morning",
+    name: "DRY BY MORNING",
+    shoe: "Traktor",
+    tagline: "Every waterproof claim is an adjective. We publish a number.",
+    description: "Print two real numbers on the box. Publicly invite every competitor to publish theirs. Nobody will.",
+    film: "Every frame shot in genuine rain. No clean-shoe hero shot anywhere.",
+    gtm: "Free drying station at retail through monsoon — open to any brand's shoes.",
+  },
+  {
+    id: "rain-locked-drop",
+    name: "THE RAIN-LOCKED DROP",
+    shoe: "Traktor",
+    tagline: "A drop nobody can game.",
+    description: "A special Traktor colourway that only unlocks in the app when it's actually raining in your city.",
+    film: "Real-world weather as the trigger. Makes the whole city hope for rain.",
+    gtm: "Announced two hours ahead, at one store. Scarcity that can't be faked.",
+  },
+  {
+    id: "thousand-riders",
+    name: "A THOUSAND RIDERS",
+    shoe: "Traktor",
+    tagline: "The most-seen feet in India.",
+    description: "A thousand pairs onto delivery riders in one city. No contract, no post required.",
+    film: "The most brutal durability test on earth, cheaper than a billboard.",
+    gtm: "Within a week the shoe is familiar to everyone at a traffic light.",
+  },
+  {
+    id: "ball-maker-capsule",
+    name: "THE BALL-MAKER CAPSULE",
+    shoe: "Reverse",
+    tagline: "Two Indian factories finally credited in public.",
+    description: "A capsule made with a Meerut or Jalandhar ball factory — their leather, their stitch, their name on the box.",
+    film: "A better story than any endorsement, at a fraction of the cost.",
+    gtm: "A few hundred pairs. The factory's name next to ours.",
   },
 ];

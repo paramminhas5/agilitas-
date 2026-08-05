@@ -2,14 +2,22 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "ALL THREE — Footwear designed around India",
+  title: "LOTTO / ONE8 — Agilitas Sports",
   description:
-    "Six original footwear concepts. Three reasons each. An evidence-led athletic portfolio designed around the ground, weather and rituals of India.",
+    "Two brands India has never had. Eleven shoes designed for how India actually lives. The complete portfolio by Param Minhas for Agilitas Sports.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body>{children}</body>
     </html>
   );

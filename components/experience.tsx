@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { shoes, technologies, campaigns } from "@/data/products";
@@ -9,178 +10,137 @@ import type { Shoe } from "@/data/products";
 gsap.registerPlugin(ScrollTrigger);
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SVG SHOE VISUAL — procedural, reliable, gorgeous with CSS 3D perspective
+   PDF DOWNLOAD HOOK
    ═══════════════════════════════════════════════════════════════════════════ */
-
-function ShoeSVG({ accent, className = "" }: { accent: string; className?: string }) {
-  return (
-    <svg className={`showcase__shoe-svg ${className}`} viewBox="0 0 400 240" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id={`grad-${accent.replace("#","")}`} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={accent} stopOpacity="0.9" />
-          <stop offset="100%" stopColor={accent} stopOpacity="0.4" />
-        </linearGradient>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="8" result="blur" />
-          <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-        </filter>
-      </defs>
-      {/* Sole */}
-      <path d="M60 185 Q80 195 200 198 Q320 195 360 180 Q365 175 360 170 Q340 165 200 162 Q80 165 55 175 Q50 180 60 185Z" fill="#1a1a1a" stroke={accent} strokeWidth="0.5" strokeOpacity="0.4" />
-      {/* Midsole */}
-      <path d="M65 175 Q85 182 200 185 Q320 182 355 170 Q358 165 355 160 Q335 155 200 152 Q85 155 62 165 Q58 170 65 175Z" fill="#111" stroke={accent} strokeWidth="0.3" strokeOpacity="0.3" />
-      {/* Upper body */}
-      <path d="M75 160 Q90 165 200 168 Q310 165 340 155 Q350 140 345 110 Q340 80 310 60 Q280 45 240 42 Q200 40 160 50 Q120 60 95 85 Q75 110 70 140 Q68 155 75 160Z" fill={`url(#grad-${accent.replace("#","")})`} fillOpacity="0.15" stroke={accent} strokeWidth="1.5" strokeOpacity="0.7" />
-      {/* Collar */}
-      <path d="M95 85 Q130 60 175 52 Q200 50 220 52" fill="none" stroke={accent} strokeWidth="2" strokeOpacity="0.9" strokeLinecap="round" />
-      {/* Tongue */}
-      <path d="M160 55 Q170 30 195 25 Q220 30 225 55" fill="none" stroke={accent} strokeWidth="1" strokeOpacity="0.5" />
-      {/* Toe cap */}
-      <path d="M300 130 Q330 120 345 110 Q350 105 345 100 Q330 95 310 100" fill="none" stroke={accent} strokeWidth="1.5" strokeOpacity="0.6" strokeLinecap="round" />
-      {/* Lace holes */}
-      {[0,1,2,3,4].map(i => (
-        <circle key={i} cx={155 + i * 18} cy={52 + i * 2} r="2.5" fill="none" stroke={accent} strokeWidth="0.8" strokeOpacity="0.5" />
-      ))}
-      {/* Accent swoosh */}
-      <path d="M110 130 Q180 100 280 95 Q320 93 340 100" fill="none" stroke={accent} strokeWidth="2.5" strokeOpacity="0.8" strokeLinecap="round" filter="url(#glow)" />
-      {/* Heel detail */}
-      <path d="M80 130 Q75 145 78 155" fill="none" stroke={accent} strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round" />
-      {/* Outsole tread lines */}
-      {[0,1,2,3,4,5,6,7].map(i => (
-        <line key={`t${i}`} x1={90 + i * 34} y1="190" x2={95 + i * 34} y2="195" stroke={accent} strokeWidth="0.5" strokeOpacity="0.3" />
-      ))}
-    </svg>
-  );
-}
-
-
-/* ═══════════════════════════════════════════════════════════════════════════
-   PDF GENERATION
-   ═══════════════════════════════════════════════════════════════════════════ */
-
-function usePdfDownload() {
-  const [generating, setGenerating] = useState(false);
-  const generate = useCallback(async () => {
-    setGenerating(true);
+function usePdf() {
+  const [busy, setBusy] = useState(false);
+  const gen = useCallback(async () => {
+    setBusy(true);
     try {
       const { jsPDF } = await import("jspdf");
-      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const margin = 15;
-      const cw = 180;
-      let y = margin;
-      const addPage = () => { doc.addPage(); y = margin; };
-      const check = (n: number) => { if (y + n > 280) addPage(); };
+      const d = new jsPDF("portrait", "mm", "a4");
+      const m = 15, w = 180;
+      let y = m;
+      const page = () => { d.addPage(); y = m; };
+      const chk = (n: number) => { if (y + n > 280) page(); };
 
       // Cover
-      doc.setFillColor(5, 5, 5); doc.rect(0, 0, 210, 297, "F");
-      doc.setTextColor(240, 240, 240); doc.setFontSize(36); doc.setFont("helvetica", "bold");
-      doc.text("LOTTO / ONE8", margin, 60);
-      doc.setFontSize(12); doc.setFont("helvetica", "normal");
-      doc.text("AGILITAS SPORTS \u2014 THE COMPLETE PORTFOLIO", margin, 75);
-      doc.setFontSize(9); doc.setTextColor(150, 150, 150);
-      doc.text("For fifty years, sports shoes have been designed for how people", margin, 100);
-      doc.text("live somewhere else. We design for how India actually lives.", margin, 106);
-      doc.setTextColor(0, 255, 136); doc.setFontSize(8);
-      doc.text("Made here for forty years. Designed here from now.", margin, 130);
-      doc.setTextColor(150, 150, 150); doc.setFontSize(7);
-      doc.text("Prepared by Param Minhas, Creative Direction", margin, 280);
+      d.setFillColor(6,6,6); d.rect(0,0,210,297,"F");
+      d.setTextColor(240,240,240); d.setFontSize(38); d.setFont("helvetica","bold");
+      d.text("LOTTO / ONE8", m, 55);
+      d.setFontSize(11); d.setFont("helvetica","normal");
+      d.text("AGILITAS SPORTS \u2014 THE COMPLETE PORTFOLIO", m, 70);
+      d.setFontSize(9); d.setTextColor(150,150,150);
+      d.text("For fifty years, sports shoes have been designed for how people", m, 95);
+      d.text("live somewhere else. We design for how India actually lives.", m, 101);
+      d.setTextColor(0,255,136); d.setFontSize(8);
+      d.text("Made here for forty years. Designed here from now.", m, 125);
+      d.setTextColor(100,100,100); d.setFontSize(7);
+      d.text("Prepared by Param Minhas, Creative Direction", m, 280);
 
       // Tech
-      addPage(); doc.setFillColor(5, 5, 5); doc.rect(0, 0, 210, 297, "F");
-      doc.setTextColor(0, 255, 136); doc.setFontSize(8); doc.text("TECHNOLOGY PLATFORMS", margin, y); y += 10;
-      doc.setTextColor(240, 240, 240); doc.setFontSize(18); doc.setFont("helvetica", "bold");
-      doc.text("Ten Platforms. Named. Reusable. Real.", margin, y); y += 14;
-      technologies.forEach((t) => {
-        check(22);
-        doc.setTextColor(240, 240, 240); doc.setFontSize(10); doc.setFont("helvetica", "bold");
-        doc.text(t.name, margin, y); y += 5;
-        doc.setTextColor(0, 255, 136); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-        doc.text(t.tagline, margin, y); y += 4;
-        doc.setTextColor(150, 150, 150); doc.setFontSize(8);
-        const l = doc.splitTextToSize(t.description, cw); doc.text(l, margin, y); y += l.length * 4 + 6;
+      page(); d.setFillColor(6,6,6); d.rect(0,0,210,297,"F");
+      d.setTextColor(0,255,136); d.setFontSize(8); d.text("TECHNOLOGY PLATFORMS", m, y); y += 10;
+      d.setTextColor(240,240,240); d.setFontSize(18); d.setFont("helvetica","bold");
+      d.text("Ten Platforms. Named. Reusable. Real.", m, y); y += 14;
+      technologies.forEach(t => {
+        chk(20); d.setTextColor(240,240,240); d.setFontSize(10); d.setFont("helvetica","bold");
+        d.text(t.name, m, y); y += 5;
+        d.setTextColor(0,255,136); d.setFontSize(7); d.setFont("helvetica","normal");
+        d.text(t.tagline, m, y); y += 4;
+        d.setTextColor(150,150,150); d.setFontSize(8);
+        const l = d.splitTextToSize(t.description, w); d.text(l, m, y); y += l.length * 4 + 5;
       });
 
       // Shoes
-      shoes.forEach((s) => {
-        addPage(); doc.setFillColor(5, 5, 5); doc.rect(0, 0, 210, 297, "F");
-        doc.setTextColor(150, 150, 150); doc.setFontSize(7);
-        doc.text(`${s.brand} \u2014 ${String(s.order).padStart(2, "0")} / 11`, margin, y); y += 8;
-        doc.setTextColor(240, 240, 240); doc.setFontSize(24); doc.setFont("helvetica", "bold");
-        doc.text(s.name, margin, y); y += 8;
-        doc.setFontSize(11); doc.setFont("helvetica", "normal"); doc.text(s.subtitle, margin, y); y += 10;
-        doc.setTextColor(150, 150, 150); doc.setFontSize(9);
-        const w = doc.splitTextToSize(s.whyWeMadeIt, cw); doc.text(w, margin, y); y += w.length * 4.5 + 8;
-        [{ code: "A", ...s.purposeA }, { code: "B", ...s.purposeB }, { code: "S", ...s.purposeS }].forEach((p) => {
-          check(16);
-          doc.setTextColor(0, 255, 136); doc.setFontSize(12); doc.setFont("helvetica", "bold");
-          doc.text(p.code, margin, y);
-          doc.setTextColor(240, 240, 240); doc.setFontSize(9); doc.text(p.label, margin + 10, y); y += 5;
-          doc.setTextColor(150, 150, 150); doc.setFontSize(8); doc.setFont("helvetica", "normal");
-          const d = doc.splitTextToSize(p.description, cw - 10); doc.text(d, margin + 10, y); y += d.length * 4 + 5;
+      shoes.forEach(s => {
+        page(); d.setFillColor(6,6,6); d.rect(0,0,210,297,"F");
+        d.setTextColor(100,100,100); d.setFontSize(7);
+        d.text(`${s.brand} \u2014 ${String(s.order).padStart(2,"0")} / 11`, m, y); y += 8;
+        d.setTextColor(240,240,240); d.setFontSize(24); d.setFont("helvetica","bold");
+        d.text(s.name, m, y); y += 8;
+        d.setFontSize(11); d.setFont("helvetica","normal"); d.text(s.subtitle, m, y); y += 10;
+        d.setTextColor(150,150,150); d.setFontSize(9);
+        const wl = d.splitTextToSize(s.whyWeMadeIt, w); d.text(wl, m, y); y += wl.length * 4.5 + 8;
+        [{code:"A",...s.purposeA},{code:"B",...s.purposeB},{code:"S",...s.purposeS}].forEach(p => {
+          chk(16); d.setTextColor(0,255,136); d.setFontSize(12); d.setFont("helvetica","bold");
+          d.text(p.code, m, y); d.setTextColor(240,240,240); d.setFontSize(9); d.text(p.label, m+10, y); y += 5;
+          d.setTextColor(150,150,150); d.setFontSize(8); d.setFont("helvetica","normal");
+          const dl = d.splitTextToSize(p.description, w-10); d.text(dl, m+10, y); y += dl.length*4+5;
         });
-        check(12); doc.setTextColor(240, 240, 240); doc.setFontSize(8); doc.setFont("helvetica", "bold");
-        doc.text("THE VALUE", margin, y); y += 4;
-        doc.setFont("helvetica", "normal"); doc.setTextColor(150, 150, 150);
-        const v = doc.splitTextToSize(s.value, cw); doc.text(v, margin, y); y += v.length * 4 + 4;
+        chk(12); d.setTextColor(240,240,240); d.setFontSize(8); d.setFont("helvetica","bold");
+        d.text("THE VALUE", m, y); y += 4; d.setFont("helvetica","normal"); d.setTextColor(150,150,150);
+        const vl = d.splitTextToSize(s.value, w); d.text(vl, m, y); y += vl.length*4+4;
       });
 
       // Campaigns
-      addPage(); doc.setFillColor(5, 5, 5); doc.rect(0, 0, 210, 297, "F");
-      doc.setTextColor(0, 255, 136); doc.setFontSize(8); doc.text("CAMPAIGNS", margin, y); y += 10;
-      doc.setTextColor(240, 240, 240); doc.setFontSize(18); doc.setFont("helvetica", "bold");
-      doc.text("Do Things, Don\u2019t Just Say Things.", margin, y); y += 14;
-      campaigns.forEach((c) => {
-        check(20);
-        doc.setTextColor(240, 240, 240); doc.setFontSize(10); doc.setFont("helvetica", "bold"); doc.text(c.name, margin, y);
-        doc.setTextColor(150, 150, 150); doc.setFontSize(7); doc.setFont("helvetica", "normal");
-        doc.text(`\u2014 ${c.shoe}`, margin + doc.getTextWidth(c.name + "  "), y); y += 5;
-        doc.setTextColor(0, 255, 136); doc.setFontSize(8); doc.text(c.tagline, margin, y); y += 4;
-        doc.setTextColor(150, 150, 150); const d = doc.splitTextToSize(c.description, cw); doc.text(d, margin, y); y += d.length * 4 + 6;
+      page(); d.setFillColor(6,6,6); d.rect(0,0,210,297,"F");
+      d.setTextColor(0,255,136); d.setFontSize(8); d.text("CAMPAIGNS", m, y); y += 10;
+      d.setTextColor(240,240,240); d.setFontSize(18); d.setFont("helvetica","bold");
+      d.text("Do Things. Don\u2019t Just Say Things.", m, y); y += 14;
+      campaigns.forEach(c => {
+        chk(20); d.setTextColor(240,240,240); d.setFontSize(10); d.setFont("helvetica","bold");
+        d.text(c.name, m, y); d.setTextColor(100,100,100); d.setFontSize(7); d.setFont("helvetica","normal");
+        d.text(` \u2014 ${c.shoe}`, m+d.getTextWidth(c.name+" "), y); y += 5;
+        d.setTextColor(0,255,136); d.setFontSize(8); d.text(c.tagline, m, y); y += 4;
+        d.setTextColor(150,150,150); const dl = d.splitTextToSize(c.description, w); d.text(dl, m, y); y += dl.length*4+6;
       });
 
-      doc.save("Agilitas-LOTTO-ONE8-Portfolio.pdf");
-    } catch (e) { console.error("PDF error:", e); } finally { setGenerating(false); }
+      d.save("Agilitas-LOTTO-ONE8-Portfolio.pdf");
+    } catch(e) { console.error(e); } finally { setBusy(false); }
   }, []);
-  return { generate, generating };
+  return { gen, busy };
 }
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   SHOE SHOWCASE — The centrepiece. Shoe in centre, features around it.
+   SHOE SHOWCASE COMPONENT
+   Shoe image centred, A/B/S features orbit, tech pills below
    ═══════════════════════════════════════════════════════════════════════════ */
-
-function ShoeShowcase({ shoe }: { shoe: Shoe }) {
+function ShoeShowcase({ shoe, index }: { shoe: Shoe; index: number }) {
   const ref = useRef<HTMLElement>(null);
-  const techs = technologies.filter((t) => shoe.technologies.includes(t.id));
+  const techs = technologies.filter(t => shoe.technologies.includes(t.id));
 
   useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
-        scrollTrigger: { trigger: ref.current, start: "top 75%", toggleActions: "play none none none" },
+        scrollTrigger: { trigger: el, start: "top 80%", end: "top 30%", toggleActions: "play none none none" }
       });
-      tl.from(ref.current!.querySelector(".showcase__header"), { opacity: 0, y: 40, duration: 0.8, ease: "power3.out" })
-        .from(ref.current!.querySelector(".showcase__center"), { opacity: 0, scale: 0.85, duration: 1, ease: "power3.out" }, "-=0.4")
-        .from(ref.current!.querySelectorAll(".feat"), { opacity: 0, x: (i) => (i < 2 ? -40 : 40), stagger: 0.12, duration: 0.7, ease: "power3.out" }, "-=0.6")
-        .from(ref.current!.querySelectorAll(".pill"), { opacity: 0, y: 15, stagger: 0.05, duration: 0.4 }, "-=0.3");
-    }, ref);
+      tl.from(el.querySelector(".shoe__header"), { opacity: 0, y: 50, duration: 0.9, ease: "power3.out" })
+        .from(el.querySelector(".shoe__img-wrap") || el.querySelector(".shoe__placeholder"), { opacity: 0, scale: 0.8, duration: 1.1, ease: "power3.out" }, "-=0.5")
+        .from(el.querySelectorAll(".shoe__left .feat"), { opacity: 0, x: -40, stagger: 0.12, duration: 0.7, ease: "power3.out" }, "-=0.7")
+        .from(el.querySelectorAll(".shoe__right .feat"), { opacity: 0, x: 40, stagger: 0.12, duration: 0.7, ease: "power3.out" }, "-=0.7")
+        .from(el.querySelectorAll(".pill"), { opacity: 0, y: 10, stagger: 0.04, duration: 0.4 }, "-=0.3")
+        .from(el.querySelector(".shoe__meta"), { opacity: 0, y: 15, duration: 0.5 }, "-=0.2");
+    }, el);
     return () => ctx.revert();
   }, []);
 
+  const imgSrc = `/shoes/${shoe.id}.png`;
+
   return (
-    <section ref={ref} className="showcase" id={`shoe-${shoe.id}`} style={{ "--shoe-glow": `${shoe.accent}20` } as React.CSSProperties}>
-      <div className="showcase__inner">
+    <section
+      ref={ref}
+      className="shoe"
+      id={`shoe-${shoe.id}`}
+      style={{ "--shoe-accent": shoe.accent } as React.CSSProperties}
+    >
+      <div className="shoe__bg" />
+      <div className="shoe__inner">
         {/* Header */}
-        <div className="showcase__header">
-          <div className="showcase__brand-tag" style={{ color: shoe.accent, borderColor: `${shoe.accent}60` }}>
+        <div className="shoe__header">
+          <div className="shoe__brand-tag" style={{ color: shoe.accent, borderColor: `${shoe.accent}50` }}>
             {shoe.brand} &mdash; {String(shoe.order).padStart(2, "0")} / 11
           </div>
-          <h2 className="showcase__name" style={{ color: shoe.accent }}>{shoe.name}</h2>
-          <p className="showcase__subtitle">{shoe.subtitle}</p>
-          <p className="showcase__why">{shoe.whyWeMadeIt}</p>
+          <h2 className="shoe__name" style={{ color: shoe.accent }}>{shoe.name}</h2>
+          <p className="shoe__subtitle">{shoe.subtitle}</p>
+          <p className="shoe__why">&ldquo;{shoe.whyWeMadeIt}&rdquo;</p>
         </div>
 
-        {/* Left features (A) */}
-        <div className="showcase__left">
+        {/* Left: A + B */}
+        <div className="shoe__left">
           <div className="feat">
             <div className="feat__code feat__code--a">A</div>
             <div className="feat__label">{shoe.purposeA.label}</div>
@@ -193,16 +153,24 @@ function ShoeShowcase({ shoe }: { shoe: Shoe }) {
           </div>
         </div>
 
-        {/* Centre: the shoe */}
-        <div className="showcase__center">
-          <div className="showcase__ring" />
-          <div className="showcase__shoe-visual">
-            <ShoeSVG accent={shoe.accent} />
+        {/* Centre: Shoe Image */}
+        <div className="shoe__center">
+          <div className="shoe__img-wrap">
+            <div className="shoe__ring" />
+            <Image
+              src={imgSrc}
+              alt={`${shoe.name} — ${shoe.subtitle}`}
+              width={600}
+              height={600}
+              className="shoe__img"
+              priority={index < 2}
+              unoptimized
+            />
           </div>
         </div>
 
-        {/* Right features (S + value) */}
-        <div className="showcase__right">
+        {/* Right: S + Value */}
+        <div className="shoe__right">
           <div className="feat">
             <div className="feat__code feat__code--s">S</div>
             <div className="feat__label">{shoe.purposeS.label}</div>
@@ -215,16 +183,14 @@ function ShoeShowcase({ shoe }: { shoe: Shoe }) {
         </div>
 
         {/* Tech pills */}
-        <div className="showcase__techs">
-          {techs.map((t) => <span key={t.id} className="pill">{t.name}</span>)}
+        <div className="shoe__techs">
+          {techs.map(t => <span key={t.id} className="pill">{t.name}</span>)}
         </div>
 
         {/* Meta */}
-        <div className="showcase__meta">
-          <div className="showcase__meta-item">
-            <div className="showcase__meta-label">Who It&apos;s For</div>
-            <div className="showcase__meta-value">{shoe.whoItsFor}</div>
-          </div>
+        <div className="shoe__meta">
+          <div className="shoe__meta-label">Who It&apos;s For</div>
+          <div className="shoe__meta-value">{shoe.whoItsFor}</div>
         </div>
       </div>
     </section>
@@ -233,18 +199,16 @@ function ShoeShowcase({ shoe }: { shoe: Shoe }) {
 
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   MAIN EXPERIENCE — All sections composed
+   MAIN EXPERIENCE COMPONENT
    ═══════════════════════════════════════════════════════════════════════════ */
-
 export function Experience() {
-  const { generate, generating } = usePdfDownload();
+  const { gen, busy } = usePdf();
   const mainRef = useRef<HTMLDivElement>(null);
-  const [activeShoe, setActiveShoe] = useState(0);
 
-  // Init smooth scroll & GSAP
+  // Lenis smooth scroll
   useEffect(() => {
     let lenis: any;
-    import("lenis").then((mod) => {
+    import("lenis").then(mod => {
       const Lenis = mod.default;
       lenis = new Lenis({ duration: 1.2, easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
       const raf = (time: number) => { lenis.raf(time); requestAnimationFrame(raf); };
@@ -254,50 +218,50 @@ export function Experience() {
     return () => { if (lenis) lenis.destroy(); };
   }, []);
 
-  // Scroll progress
+  // Progress bar
   useEffect(() => {
-    const bar = document.querySelector(".scroll-bar") as HTMLElement;
+    const bar = document.querySelector(".progress") as HTMLElement;
     if (!bar) return;
     const update = () => { bar.style.transform = `scaleX(${window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)})`; };
     window.addEventListener("scroll", update, { passive: true });
     return () => window.removeEventListener("scroll", update);
   }, []);
 
-  // General gsap-hidden reveals
+  // Reveal animations
   useEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>(".gsap-hidden").forEach((el) => {
-        gsap.to(el, { scrollTrigger: { trigger: el, start: "top 85%" }, opacity: 1, y: 0, duration: 0.9, ease: "power3.out" });
+      gsap.utils.toArray<HTMLElement>(".reveal").forEach(el => {
+        ScrollTrigger.create({
+          trigger: el, start: "top 85%",
+          onEnter: () => el.classList.add("visible"),
+        });
       });
     }, mainRef);
     return () => ctx.revert();
   }, []);
 
-  const scrollTo = (id: string) => { document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); };
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   return (
     <div ref={mainRef}>
       <div className="noise" />
-      <div className="scroll-bar" style={{ transform: "scaleX(0)" }} />
+      <div className="progress" style={{ transform: "scaleX(0)" }} />
 
       {/* NAV */}
       <nav className="nav">
-        <div className="nav__logo">AGILITAS</div>
+        <div className="nav__logo" onClick={() => scrollTo("hero")} style={{ cursor: "pointer" }}>AGILITAS</div>
         <div className="nav__links">
-          <span className="nav__link" onClick={() => scrollTo("hero")}>Home</span>
           <span className="nav__link" onClick={() => scrollTo("tech")}>Technology</span>
           <span className="nav__link" onClick={() => scrollTo("shoes")}>Shoes</span>
           <span className="nav__link" onClick={() => scrollTo("campaigns")}>Campaigns</span>
         </div>
-        <button className="nav__cta" onClick={generate} disabled={generating}>
-          {generating ? "Generating..." : "Download PDF"}
-        </button>
+        <button className="nav__cta" onClick={gen} disabled={busy}>{busy ? "Generating..." : "Download PDF"}</button>
       </nav>
 
-      {/* HERO */}
+      {/* ═══ HERO ═══ */}
       <section className="hero" id="hero">
         <div className="hero__grid" />
-        <div className="hero__tag"><span className="hero__dot" /> Agilitas Sports &mdash; Two Brands, One Vision</div>
+        <div className="hero__tag"><span className="hero__dot" />Agilitas Sports &mdash; Two Brands, One Vision</div>
         <h1 className="hero__h1">LOTTO<span className="hero__slash"> / </span>ONE8</h1>
         <p className="hero__sub">For fifty years, sports shoes have been designed for how people live somewhere else. We design for how <strong>India actually lives.</strong></p>
         <div className="hero__ctas">
@@ -307,49 +271,52 @@ export function Experience() {
         <div className="hero__scroll"><span>Scroll</span><div className="hero__scroll-line" /></div>
       </section>
 
-      {/* BRANDS */}
-      <div className="section gsap-hidden" style={{ opacity: 0, transform: "translateY(30px)" }}>
+      {/* ═══ BRANDS ═══ */}
+      <div className="section reveal">
         <div className="brands">
-          <div className="brand-box">
-            <div className="brand-box__label" style={{ color: "var(--lotto)" }}>LOTTO &mdash; EVERYDAY</div>
-            <h3 className="brand-box__h">The best-engineered shoe a normal person can actually afford.</h3>
-            <p className="brand-box__p">For the sports and streets they use every day. Italian sportswear heritage meeting the Indian street &mdash; bright, real, unpolished.</p>
+          <div className="brand-card">
+            <div className="brand-card__label" style={{ color: "var(--lotto)" }}>LOTTO &mdash; EVERYDAY</div>
+            <h3 className="brand-card__h">The best-engineered shoe a normal person can actually afford.</h3>
+            <p className="brand-card__p">For the sports and streets they use every day. Italian sportswear heritage meeting the Indian street &mdash; bright, real, unpolished.</p>
           </div>
-          <div className="brand-box">
-            <div className="brand-box__label" style={{ color: "var(--one8)" }}>ONE8 &mdash; ELITE</div>
-            <h3 className="brand-box__h">The high-performance brand, built on discipline.</h3>
-            <p className="brand-box__p">Founded by Virat Kohli, aimed at the serious athlete. Nobody&apos;s born ready.</p>
+          <div className="brand-card">
+            <div className="brand-card__label" style={{ color: "var(--one8)" }}>ONE8 &mdash; ELITE</div>
+            <h3 className="brand-card__h">The high-performance brand, built on discipline.</h3>
+            <p className="brand-card__p">Founded by Virat Kohli, aimed at the serious athlete. Nobody&apos;s born ready.</p>
           </div>
         </div>
       </div>
 
-      {/* STATS */}
-      <div className="section gsap-hidden" style={{ opacity: 0, transform: "translateY(30px)" }}>
+      {/* ═══ STATS ═══ */}
+      <div className="section reveal">
         <div className="stats">
           {[
-            { n: "3.34M", l: "Tennis-ball cricket matches/year" },
+            { n: "3.34M", l: "Tennis-ball matches / year" },
             { n: "11", l: "Shoes for Indian ground" },
             { n: "10", l: "Reusable tech platforms" },
             { n: "15", l: "Cities in the Combine" },
-          ].map((s, i) => (
-            <div key={i}><div className="stat__num">{s.n}</div><div className="stat__label">{s.l}</div></div>
-          ))}
+          ].map((s, i) => <div key={i}><div className="stat__num">{s.n}</div><div className="stat__label">{s.l}</div></div>)}
         </div>
       </div>
 
       <div className="divider" />
 
-      {/* TECHNOLOGY */}
+      {/* ═══ TECHNOLOGY ═══ */}
       <section className="section" id="tech">
-        <div className="section-label gsap-hidden" style={{ opacity: 0, transform: "translateY(20px)" }}>Technology Platforms</div>
-        <h2 className="section-title gsap-hidden" style={{ opacity: 0, transform: "translateY(30px)" }}>Ten Platforms.<br />Named. Reusable. Real.</h2>
-        <p className="section-desc gsap-hidden" style={{ opacity: 0, transform: "translateY(20px)" }}>Building blocks that live under many shoes and improve over years. Some appear in nearly every shoe. Some solve exactly one problem.</p>
-        <div className="tech-grid gsap-hidden" style={{ opacity: 0, transform: "translateY(30px)" }}>
-          {technologies.map((t) => (
-            <div key={t.id} className="tech-card">
-              <div className="tech-card__name">{t.name}</div>
-              <div className="tech-card__tag">{t.tagline}</div>
-              <p className="tech-card__desc">{t.description}</p>
+        <div className="label reveal">Technology Platforms</div>
+        <h2 className="title reveal">Ten Platforms.<br />Named. Reusable. Real.</h2>
+        <p className="desc reveal">Building blocks that live under many shoes and improve over years. Like Nike&apos;s &ldquo;Air&rdquo; &mdash; but honest about what&apos;s proven and what&apos;s still a target.</p>
+        <div className="tech-list reveal">
+          {technologies.map(t => (
+            <div key={t.id} className="tech-row">
+              <div className="tech-row__left">
+                <div className="tech-row__name">{t.name}</div>
+                <div className="tech-row__tag">{t.tagline}</div>
+              </div>
+              <div className="tech-row__right">
+                <div className="tech-row__desc">{t.description}</div>
+                <div className="tech-row__detail">{t.detail}</div>
+              </div>
             </div>
           ))}
         </div>
@@ -357,39 +324,31 @@ export function Experience() {
 
       <div className="divider" />
 
-      {/* SHOES — centre-stage showcases */}
+      {/* ═══ SHOES ═══ */}
       <section id="shoes">
         <div className="section">
-          <div className="section-label gsap-hidden" style={{ opacity: 0, transform: "translateY(20px)" }}>The Lineup</div>
-          <h2 className="section-title gsap-hidden" style={{ opacity: 0, transform: "translateY(30px)" }}>Eleven Shoes. Two Brands.<br />Built Backwards From Reality.</h2>
-          <p className="section-desc gsap-hidden" style={{ opacity: 0, transform: "translateY(20px)" }}>A &mdash; the reason you buy it. B &mdash; the bonus. S &mdash; the surprise that seals it.</p>
-          <div className="shoe-nav gsap-hidden" style={{ opacity: 0, transform: "translateY(15px)" }}>
-            {shoes.map((s, i) => (
-              <button key={s.id} className={`shoe-nav__btn ${i === activeShoe ? "shoe-nav__btn--active" : ""}`} onClick={() => { setActiveShoe(i); scrollTo(`shoe-${s.id}`); }} style={ i === activeShoe ? { borderColor: s.accent, color: s.accent } : undefined }>
-                {s.name}
-              </button>
-            ))}
-          </div>
+          <div className="label reveal">The Lineup</div>
+          <h2 className="title reveal">Eleven Shoes. Two Brands.<br />Built Backwards From Reality.</h2>
+          <p className="desc reveal">A &mdash; the reason you buy it. B &mdash; the bonus. S &mdash; the surprise that seals it. One shoe, three uses &mdash; stated plainly every time.</p>
         </div>
-        {shoes.map((shoe) => (
-          <ShoeShowcase key={shoe.id} shoe={shoe} />
-        ))}
+        {shoes.map((shoe, i) => <ShoeShowcase key={shoe.id} shoe={shoe} index={i} />)}
       </section>
 
       <div className="divider" />
 
-      {/* CAMPAIGNS */}
+      {/* ═══ CAMPAIGNS ═══ */}
       <section className="section" id="campaigns">
-        <div className="section-label gsap-hidden" style={{ opacity: 0, transform: "translateY(20px)" }}>Campaigns</div>
-        <h2 className="section-title gsap-hidden" style={{ opacity: 0, transform: "translateY(30px)" }}>Do Things.<br />Don&apos;t Just Say Things.</h2>
-        <p className="section-desc gsap-hidden" style={{ opacity: 0, transform: "translateY(20px)" }}>Each campaign starts from a reality, belongs to one shoe, and leaves something real behind.</p>
-        <div className="campaigns-grid gsap-hidden" style={{ opacity: 0, transform: "translateY(30px)" }}>
-          {campaigns.map((c) => (
+        <div className="label reveal">Campaigns</div>
+        <h2 className="title reveal">Do Things.<br />Don&apos;t Just Say Things.</h2>
+        <p className="desc reveal">Each campaign starts from a reality, belongs to one shoe, and leaves something real behind. No hero. No celebrity.</p>
+        <div className="camps-grid reveal">
+          {campaigns.map(c => (
             <div key={c.id} className="camp">
               <div className="camp__shoe">{c.shoe}</div>
               <h4 className="camp__name">{c.name}</h4>
               <p className="camp__tag">{c.tagline}</p>
               <p className="camp__desc">{c.description}</p>
+              <p className="camp__film">{c.film}</p>
             </div>
           ))}
         </div>
@@ -397,12 +356,12 @@ export function Experience() {
 
       <div className="divider" />
 
-      {/* FOOTER */}
+      {/* ═══ FOOTER ═══ */}
       <footer className="footer">
         <div className="footer__top">
           <div>
             <div className="footer__brand">AGILITAS</div>
-            <p className="footer__tagline">Made here for forty years. Designed here from now. The first line of shoes in this country designed for the ground they&apos;ll actually be worn on.</p>
+            <p className="footer__tagline">Made here for forty years. Designed here from now. The first line of shoes designed for the ground they&apos;ll actually be worn on.</p>
           </div>
           <div>
             <div className="footer__col-title">Brands</div>
@@ -417,19 +376,19 @@ export function Experience() {
           </div>
           <div>
             <div className="footer__col-title">Document</div>
-            <button className="footer__link" onClick={generate}>Download PDF</button>
+            <button className="footer__link" onClick={gen}>Download PDF</button>
           </div>
         </div>
         <div className="footer__bottom">
-          <span>&copy; 2025 Agilitas Sports. All rights reserved.</span>
+          <span>&copy; 2025 Agilitas Sports</span>
           <span style={{ fontFamily: "var(--font-mono)", letterSpacing: "0.06em" }}>PREPARED BY PARAM MINHAS</span>
         </div>
       </footer>
 
-      {/* FIXED PDF BUTTON */}
-      <button className="pdf-btn" onClick={generate} disabled={generating}>
+      {/* PDF floating button */}
+      <button className="pdf-btn" onClick={gen} disabled={busy}>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" /></svg>
-        {generating ? "Generating..." : "PDF"}
+        {busy ? "..." : "PDF"}
       </button>
     </div>
   );

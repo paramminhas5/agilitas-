@@ -294,7 +294,7 @@ export const shoes: Shoe[] = [
     palette: ["#1a1510", "#8D6E63", "#2d251a"],
   },
   {
-    id: "1973-premium",
+    id: "1973",
     order: 11,
     brand: "LOTTO",
     name: "1973",

@@ -26,12 +26,12 @@ export const AMBIENCE: Record<string, Ambience> = {
   "camp:the-trial": "shimmer",
 
   // Sodium street light
-  "shoe:session": "sodium",
+  "shoe:dad-shoe": "sodium",
   "camp:thousand-riders": "sodium",
   "camp:sunday-session": "sodium",
 
   // One hard light through a doorway, and the dust in it
-  "shoe:doorway": "shaft",
+  "shoe:barefoot-nps": "shaft",
   "shoe:recover": "shaft",
   "camp:take-them-off": "shaft",
   "camp:ball-maker-capsule": "shaft",

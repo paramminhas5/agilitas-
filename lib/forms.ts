@@ -50,8 +50,8 @@ export const FORMS: Record<string, Form> = {
     sole: 0.26, drop: 0.09, collar: 0.58, upper: 0.84, tread: "channel",
   }),
 
-  /* Everyday slip-off. Soft, unremarkable on purpose. */
-  doorway: f({ width: 0.6, sole: 0.18, collar: 0.16, upper: 0.66, tread: "smooth" }),
+  /* Barefoot slip-off. Thin sole, flat, wide forefoot, unremarkable on purpose. */
+  "barefoot-nps": f({ width: 0.64, sole: 0.07, drop: 0, collar: 0.16, upper: 0.66, tread: "smooth" }),
 
   /* Lowest and narrowest — a turf shoe you can move sideways in. */
   nightshift: f({
@@ -66,7 +66,7 @@ export const FORMS: Record<string, Form> = {
   }),
 
   /* Vulcanised skate shoe — flat, slightly wider forefoot. */
-  session: f({ width: 0.61, sole: 0.14, drop: 0.01, collar: 0.03, upper: 0.6, tread: "smooth" }),
+  "dad-shoe": f({ width: 0.61, sole: 0.14, drop: 0.01, collar: 0.03, upper: 0.6, tread: "smooth" }),
 
   /* Cricket: longest, studded, a little more ankle. */
   reverse: f({
@@ -84,7 +84,7 @@ export const FORMS: Record<string, Form> = {
   }),
 
   /* Leather mid — the tallest cuff in the line. */
-  "everyday-mid": f({ sole: 0.2, collar: 0.9, upper: 0.98, tread: "smooth" }),
+  "community-halls": f({ sole: 0.2, collar: 0.9, upper: 0.98, tread: "smooth" }),
 
   /* Premium low study. Restrained everywhere. */
   "1973": f({ len: 3.0, width: 0.56, sole: 0.16, collar: 0.05, upper: 0.6, tread: "smooth" }),

@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, type ElementType, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 type Props = {
   text: string;
-  as?: ElementType;
   className?: string;
   /** char = per-letter (display type). word = per-word (body copy, cheaper). */
   mode?: "char" | "word";
@@ -23,14 +22,13 @@ type Props = {
  */
 export function Split({
   text,
-  as: Tag = "span",
   className = "",
   mode = "char",
   stagger = 24,
   delay = 0,
   threshold = 0.25,
 }: Props) {
-  const ref = useRef<HTMLElement>(null);
+  const ref = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const el = ref.current;
@@ -83,9 +81,9 @@ export function Split({
   });
 
   return (
-    <Tag ref={ref} className={`sp ${className}`} aria-label={text}>
+    <span ref={ref} className={`sp ${className}`} aria-label={text}>
       {nodes}
-    </Tag>
+    </span>
   );
 }
 

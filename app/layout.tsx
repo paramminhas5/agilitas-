@@ -2,9 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "LOTTO / ONE8 — Agilitas Sports",
+  title: "Lotto / one8 — Agilitas Sports",
   description:
     "Two brands India has never had. Eleven shoes designed for how India actually lives. The complete portfolio by Param Minhas for Agilitas Sports.",
+  // Declared explicitly so browsers stop probing /favicon.ico and 404ing.
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    shortcut: [{ url: "/icon.svg", type: "image/svg+xml" }],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

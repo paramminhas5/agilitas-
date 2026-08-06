@@ -1,8 +1,9 @@
 "use client";
 
 import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { raw, stage as stageSlot, useSceneValue } from "@/lib/store";
 import { resolveWorld } from "@/lib/worlds";
 import { budget, type Tier } from "@/lib/perf";
@@ -134,10 +135,12 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
       const visH = 2 * Math.tan((cam.fov * Math.PI) / 360) * cam.position.z;
       const perPx = visH / window.innerHeight;
       const fitPx = Math.min(r.width, r.height);
+      // 1.15 rather than 0.86: a bounding sphere is generous by definition, so
+      // fitting strictly inside it left a hero product reading as a thumbnail.
       const target = THREE.MathUtils.clamp(
-        (fitPx * perPx * 0.86) / (radius.current * 2),
+        (fitPx * perPx * 1.15) / (radius.current * 2),
         0.3,
-        1.4
+        2.6
       );
       fitScale.current += (target - fitScale.current) * k;
     } else {
@@ -216,6 +219,28 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
 }
 
 
+/**
+ * A neutral studio environment. Real PBR materials need something to reflect;
+ * without it a metallic or clearcoated shoe renders flat and murky no matter
+ * how many lights you point at it. Generated once, on the GPU.
+ */
+function Environment() {
+  const { gl, scene } = useThree();
+  useEffect(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const room = new RoomEnvironment();
+    const tex = pmrem.fromScene(room, 0.04).texture;
+    scene.environment = tex;
+    return () => {
+      scene.environment = null;
+      tex.dispose();
+      pmrem.dispose();
+      room.dispose?.();
+    };
+  }, [gl, scene]);
+  return null;
+}
+
 export default function Stage({ tier }: { tier: Tier }) {
   const b = budget(tier);
   if (tier === "off") return null;
@@ -228,6 +253,7 @@ export default function Stage({ tier }: { tier: Tier }) {
         camera={{ position: [0, 0.1, 5.4], fov: 38, near: 0.1, far: 60 }}
         frameloop="always"
       >
+        <Environment />
         <Rig tier={tier} shards={b.shards} />
         {b.grit > 0 && <Particles count={b.grit} />}
         {b.rain > 0 && <Rain count={b.rain} />}

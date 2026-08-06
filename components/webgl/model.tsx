@@ -40,7 +40,7 @@ export function Model({ path }: { path: string }) {
     // Normalise to roughly 2.6 units on its longest edge, then sit it so the
     // pivot is the middle of the object rather than wherever the exporter
     // happened to leave the origin.
-    const k = 2.6 / longest;
+    const k = 3.2 / longest;
     g.scale.setScalar(k);
     g.position.set(-centre.x * k, -centre.y * k, -centre.z * k);
   }, [scene]);

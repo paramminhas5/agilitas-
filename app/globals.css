@@ -920,8 +920,10 @@ img { display: block; max-width: 100%; height: auto; }
 }
 .icon__street {
   font-family: var(--f-display); font-weight: 900;
-  font-size: clamp(2.6rem, 8vw, 7rem); line-height: 0.86;
+  /* Was 7rem: "THE KOHLI 1S" broke to an orphaned "1S". */
+  font-size: clamp(2.4rem, 6.2vw, 5.4rem); line-height: 0.88;
   letter-spacing: -0.05em; text-transform: uppercase;
+  text-wrap: balance;
 }
 .icon__line {
   margin-top: 1.5rem; max-width: 34ch;

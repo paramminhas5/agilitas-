@@ -28,6 +28,10 @@ export type SceneState = {
    *  Kept out of React updates on purpose — it changes far too often. */
   px: number;
   py: number;
+  /** key into the WORLDS map, e.g. "shoe:traktor" or "camp:dry-by-morning" */
+  world: string;
+  /** which shoe silhouette the object should currently be */
+  formId: string;
 };
 
 const state: SceneState = {
@@ -40,7 +44,21 @@ const state: SceneState = {
   tech: 0,
   px: 0,
   py: 0,
+  world: "hero",
+  formId: "alleys",
 };
+
+/**
+ * The DOM box the 3D object should occupy right now. Sections hand over their
+ * reserved slot as they take the viewport, and the rig projects the object
+ * into it — which is what keeps the object out of the copy.
+ * Deliberately outside React state: it is read every frame.
+ */
+export const stage: { el: HTMLElement | null } = { el: null };
+
+export function claimStage(el: HTMLElement | null) {
+  stage.el = el;
+}
 
 const subs = new Set<() => void>();
 let snap: SceneState = { ...state };

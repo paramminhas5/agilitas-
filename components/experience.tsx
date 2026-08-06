@@ -65,7 +65,6 @@ export function Experience() {
       {ready && <Stage tier={tier} />}
 
       <div className="grain" aria-hidden />
-      <div className="scan" aria-hidden />
       <Cursor />
       <RevealScope />
 

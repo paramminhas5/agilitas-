@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties } from "react";
-import { campaigns, type Campaign } from "@/data/products";
+import { campaigns, shoes, type Campaign } from "@/data/products";
 import { Split } from "@/components/ui/split";
 import { goTo } from "@/lib/scroll";
+import { set, claimStage } from "@/lib/store";
 
 /** Each campaign gets its own light. Cold palette throughout. */
 const WASH: Record<string, CSSProperties> = {
@@ -53,8 +54,31 @@ const WASH: Record<string, CSSProperties> = {
 };
 
 
+/** Campaigns name their shoe in prose; map that back to a silhouette. */
+function formForCampaign(label: string) {
+  const hit = shoes.find((s) => label.toLowerCase().includes(s.name.toLowerCase()));
+  return hit?.id ?? "alleys";
+}
+
 function Scene({ c, n }: { c: Campaign; n: number }) {
   const ref = useRef<HTMLElement>(null);
+  const slot = useRef<HTMLDivElement>(null);
+
+  // Take over the world and the object as this scene claims the viewport.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        claimStage(slot.current);
+        set({ world: `camp:${c.id}`, formId: formForCampaign(c.shoe) });
+      },
+      { threshold: 0.5 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [c.id, c.shoe]);
 
   // Parallax the wash a little against the scroll for depth.
   useEffect(() => {
@@ -106,6 +130,9 @@ function Scene({ c, n }: { c: Campaign; n: number }) {
           </div>
         </div>
       </div>
+
+      {/* Reserved box for the object in this scene */}
+      <div className="slot scene__stage" ref={slot} aria-hidden />
     </section>
   );
 }

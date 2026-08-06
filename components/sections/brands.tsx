@@ -1,6 +1,8 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Split } from "@/components/ui/split";
+import { set, claimStage } from "@/lib/store";
 
 const METRICS = [
   { n: "3.34M", l: "Tennis-ball matches a year" },
@@ -10,8 +12,26 @@ const METRICS = [
 ];
 
 export function Brands() {
+  const ref = useRef<HTMLElement>(null);
+
+  // No reserved box here: the object drifts to the margin and shrinks back.
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        claimStage(null);
+        set({ world: "brands" });
+      },
+      { threshold: 0.4 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <section className="vent" id="brands">
+    <section className="vent" id="brands" ref={ref}>
       <div className="wrap bay--tight">
         <div className="duo">
           <div className="duo__cell" data-cur="Lotto">

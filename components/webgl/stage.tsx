@@ -1,33 +1,36 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { raw, activeAccent } from "@/lib/store";
+import { raw, stage as stageSlot } from "@/lib/store";
+import { resolveWorld } from "@/lib/worlds";
 import { budget, type Tier } from "@/lib/perf";
-import { Form } from "./form";
+import { Shoe } from "./shoe";
 import { Shards } from "./shards";
-import { Grit } from "./grit";
+import { Particles } from "./particles";
+import { Ground } from "./ground";
 
-/** Where the object should sit for each region of the page. */
-const MARKS: Record<string, [number, number, number]> = {
-  hero:    [ 0.00,  0.05, 0.0],
-  brands:  [ 2.30, -0.20, -1.2],
-  lab:     [ 2.05,  0.10, -0.6],
-  journey: [ 1.95,  0.00, -0.2],
-  scenes:  [-2.15, -0.10, -1.0],
-  foot:    [ 0.00, -1.60, -2.4],
+/** Fallback placement for regions that reserve no box of their own. */
+const DRIFT: Record<string, [number, number]> = {
+  brands: [0.66, -0.12],
+  foot: [0.0, -0.4],
 };
 
-/** Moves the object between marks and breathes the camera with scroll. */
 function Rig({ tier, shards }: { tier: Tier; shards: number }) {
   const holder = useRef<THREE.Group>(null);
-  const key = useRef(new THREE.PointLight());
-  const target = useRef(new THREE.Vector3(0, 0.05, 0));
-  const lightCol = useRef(new THREE.Color("#A9C6D8"));
+  const key = useRef<THREE.PointLight>(null);
+  const fill = useRef<THREE.PointLight>(null);
 
-  // The canvas is pointer-events:none, so R3F's own pointer never updates.
-  // Track it at the window instead.
+  const keyCol = useRef(new THREE.Color("#EDEBE6"));
+  const fillCol = useRef(new THREE.Color("#8A7CFF"));
+  const fogCol = useRef(new THREE.Color("#050608"));
+  const tmp = useRef(new THREE.Color());
+  const want = useMemo(() => new THREE.Vector3(), []);
+  const dir = useMemo(() => new THREE.Vector3(), []);
+  const lightAt = useMemo(() => new THREE.Vector3(), []);
+  const fitScale = useRef(1);
+
   useEffect(() => {
     const move = (e: PointerEvent) => {
       raw.px = (e.clientX / window.innerWidth) * 2 - 1;
@@ -37,43 +40,92 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
     return () => window.removeEventListener("pointermove", move);
   }, []);
 
+
   useFrame((st, dt) => {
     const h = holder.current;
     if (!h) return;
+    const cam = st.camera as THREE.PerspectiveCamera;
+    const world = resolveWorld(raw.world);
+    const k = Math.min(1, dt * 2.2);
 
-    const mark = MARKS[raw.phase] ?? MARKS.hero;
-    target.current.set(mark[0], mark[1], mark[2]);
-    h.position.lerp(target.current, Math.min(1, dt * 1.5));
+    /* Camera: fixed dolly with a little pointer parallax. */
+    cam.position.x += (raw.px * 0.3 - cam.position.x) * Math.min(1, dt * 1.1);
+    cam.position.y += (raw.py * 0.18 + 0.1 - cam.position.y) * Math.min(1, dt * 1.1);
+    cam.position.z += (5.4 - cam.position.z) * Math.min(1, dt);
+    cam.lookAt(0, 0, 0);
 
-    // Camera drifts a little with the pointer for parallax, and pulls back
-    // slightly as the document advances.
-    const cam = st.camera;
-    cam.position.x += (raw.px * 0.35 - cam.position.x) * Math.min(1, dt * 1.1);
-    cam.position.y += (raw.py * 0.22 + 0.1 - cam.position.y) * Math.min(1, dt * 1.1);
-    cam.position.z += (5.4 + raw.progress * 1.1 - cam.position.z) * Math.min(1, dt * 0.9);
-    cam.lookAt(h.position.x * 0.35, 0, 0);
+    /* Placement: project the section's reserved DOM box into the scene, so
+       the object always lands inside its own slot and never over the copy. */
+    const el = stageSlot.el;
+    if (el) {
+      const r = el.getBoundingClientRect();
+      const ndcX = ((r.left + r.width / 2) / window.innerWidth) * 2 - 1;
+      const ndcY = -(((r.top + r.height / 2) / window.innerHeight) * 2 - 1);
 
-    lightCol.current.set(activeAccent());
-    key.current.color.lerp(lightCol.current, Math.min(1, dt * 2));
+      dir.set(ndcX, ndcY, 0.5).unproject(cam).sub(cam.position).normalize();
+      const travel = -cam.position.z / dir.z; // intersect the z = 0 plane
+      want.copy(cam.position).addScaledVector(dir, travel);
+
+      // Fit the object to the width of that box.
+      const visH = 2 * Math.tan((cam.fov * Math.PI) / 360) * cam.position.z;
+      const perPx = visH / window.innerHeight;
+      const target = THREE.MathUtils.clamp((r.width * perPx) / 3.05, 0.42, 1.5);
+      fitScale.current += (target - fitScale.current) * k;
+    } else {
+      const d = DRIFT[raw.world] ?? DRIFT[raw.phase] ?? [0.5, -0.1];
+      const visH = 2 * Math.tan((cam.fov * Math.PI) / 360) * cam.position.z;
+      want.set(d[0] * visH * 0.9, d[1] * visH * 0.5, 0);
+      fitScale.current += (0.72 - fitScale.current) * k;
+    }
+
+    h.position.lerp(want, Math.min(1, dt * 1.9));
+    h.scale.setScalar(fitScale.current);
+
+
+    /* Light rig and air are properties of the world, eased between. */
+    if (key.current) {
+      tmp.current.set(world.key);
+      keyCol.current.lerp(tmp.current, k);
+      key.current.color.copy(keyCol.current);
+      key.current.intensity += (world.keyIntensity - key.current.intensity) * k;
+      lightAt.set(world.keyPos[0], world.keyPos[1], world.keyPos[2]);
+      key.current.position.lerp(lightAt, k);
+    }
+    if (fill.current) {
+      tmp.current.set(world.fill);
+      fillCol.current.lerp(tmp.current, k);
+      fill.current.color.copy(fillCol.current);
+      fill.current.intensity += (world.fillIntensity - fill.current.intensity) * k;
+    }
+
+    const fog = st.scene.fog as THREE.Fog | null;
+    if (fog) {
+      tmp.current.set(world.fog);
+      fogCol.current.lerp(tmp.current, k);
+      fog.color.copy(fogCol.current);
+      fog.near += (world.fogNear - fog.near) * k;
+      fog.far += (world.fogFar - fog.far) * k;
+    }
   });
-
 
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <pointLight ref={key} position={[2.6, 2.4, 3.2]} intensity={26} distance={14} decay={2} />
-      <pointLight position={[-3.2, -1.6, 2.2]} intensity={12} distance={12} decay={2} color="#8A7CFF" />
-      <directionalLight position={[-1.5, 3, -2]} intensity={0.5} color="#CFE6F2" />
+      <ambientLight intensity={0.42} />
+      <pointLight ref={key} position={[2.6, 2.4, 3.2]} intensity={24} distance={16} decay={2} />
+      <pointLight ref={fill} position={[-3.2, -1.4, 2.2]} intensity={10} distance={13} decay={2} />
+      <directionalLight position={[-1.5, 3, -2]} intensity={0.4} color="#CFE6F2" />
+
+      <Ground />
 
       <group ref={holder}>
-        <Form tier={tier} />
+        <Shoe tier={tier} />
         {shards > 0 && <Shards tier={tier} count={shards} />}
       </group>
     </>
   );
 }
 
-/** The persistent canvas that sits behind the entire document. */
+
 export default function Stage({ tier }: { tier: Tier }) {
   const b = budget(tier);
   if (tier === "off") return null;
@@ -87,7 +139,7 @@ export default function Stage({ tier }: { tier: Tier }) {
         frameloop="always"
       >
         <Rig tier={tier} shards={b.shards} />
-        {b.grit > 0 && <Grit count={b.grit} />}
+        {b.grit > 0 && <Particles count={b.grit} />}
         <fog attach="fog" args={["#050608", 7, 20]} />
       </Canvas>
     </div>

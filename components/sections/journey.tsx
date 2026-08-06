@@ -4,23 +4,30 @@ import { useEffect, useRef, useState } from "react";
 import { shoes, technologies, type Shoe } from "@/data/products";
 import { Split } from "@/components/ui/split";
 import { goTo } from "@/lib/scroll";
-import { set } from "@/lib/store";
+import { set, claimStage } from "@/lib/store";
 import { hasArt, hasModel, artPath } from "@/lib/assets";
 
 function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: number) => void }) {
   const ref = useRef<HTMLElement>(null);
+  const slot = useRef<HTMLDivElement>(null);
   const techs = technologies.filter((t) => shoe.technologies.includes(t.id));
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) onEnter(i); },
+      ([e]) => {
+        if (!e.isIntersecting) return;
+        onEnter(i);
+        // Hand the object this berth's reserved box, its silhouette and its world.
+        claimStage(slot.current);
+        set({ world: `shoe:${shoe.id}`, formId: shoe.id });
+      },
       { threshold: 0.5 }
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [i, onEnter]);
+  }, [i, onEnter, shoe.id]);
 
   const art = hasArt(shoe.id);
   const model = hasModel(shoe.id);
@@ -43,6 +50,12 @@ function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: numbe
           </h2>
           <p className="berth__sub">{shoe.subtitle}</p>
           <p className="berth__why">{shoe.whyWeMadeIt}</p>
+
+          {/* The single most important sentence on the page gets to behave
+              like one, instead of being buried in a box. */}
+          <p className="berth__value rise" style={{ ["--accent" as string]: shoe.accent }}>
+            {shoe.value}
+          </p>
 
 
           <div className="deck rise">
@@ -69,18 +82,8 @@ function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: numbe
               <div className="strip__text">{shoe.features}</div>
             </div>
             <div className="strip__cell">
-              <div className="strip__title">The value</div>
-              <div className="strip__text">{shoe.value}</div>
-            </div>
-            <div className="strip__cell">
               <div className="strip__title">Who it&apos;s for</div>
               <div className="strip__text">{shoe.whoItsFor}</div>
-            </div>
-            <div className="strip__cell">
-              <div className="strip__title">Platforms fitted</div>
-              <div className="strip__text">
-                {techs.length} of {technologies.length} — listed below
-              </div>
             </div>
           </div>
 
@@ -94,20 +97,16 @@ function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: numbe
         </div>
 
 
-        {/* Reserved column. The 3D form flies in here; when real art or a
-            model lands in the repo it takes this slot instead. */}
-        <div className="berth__void">
+        {/* Reserved column. The 3D object is projected into this exact box,
+            so it can never overlap the copy. Real art replaces it. */}
+        <div className="berth__void slot" ref={slot}>
           {art ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img src={artPath(shoe.id)} alt={`${shoe.name} — ${shoe.subtitle}`} />
           ) : !model ? (
             <div className="holder rise">
-              <div className="holder__label">
-                <b>{shoe.name}</b>
-                awaiting art
-                <br />
-                /public/shoes/{shoe.id}.png
-              </div>
+              <div className="holder__corner" />
+              <div className="holder__meta">{shoe.id}.png</div>
             </div>
           ) : null}
         </div>

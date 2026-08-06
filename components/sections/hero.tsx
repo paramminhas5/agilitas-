@@ -3,17 +3,24 @@
 import { useEffect, useRef } from "react";
 import { Split } from "@/components/ui/split";
 import { goTo } from "@/lib/scroll";
-import { set } from "@/lib/store";
+import { set, claimStage } from "@/lib/store";
 
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
+  const slot = useRef<HTMLDivElement>(null);
 
   // Breaking the glass is tied to leaving the hero, not to a timer.
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([e]) => set({ shattered: e.intersectionRatio < 0.62 }),
+      ([e]) => {
+        set({ shattered: e.intersectionRatio < 0.62 });
+        if (e.intersectionRatio > 0.5) {
+          claimStage(slot.current);
+          set({ world: "hero", formId: "alleys" });
+        }
+      },
       { threshold: [0, 0.3, 0.62, 0.9, 1] }
     );
     io.observe(el);
@@ -54,6 +61,9 @@ export function Hero() {
           </button>
         </div>
       </div>
+
+      {/* Reserved box for the 3D object */}
+      <div className="slot hero__stage" ref={slot} aria-hidden />
 
       <div className="hero__hint">
         <span className="hero__hint-line" />

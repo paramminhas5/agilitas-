@@ -73,7 +73,7 @@ function Scene({ c, n }: { c: Campaign; n: number }) {
     const io = new IntersectionObserver(
       ([e]) => {
         if (!e.isIntersecting) return;
-        claimStage(slot.current);
+        claimStage(null);
         set({ world: `camp:${c.id}`, formId: formForCampaign(c.shoe) });
       },
       { threshold: 0.5 }

@@ -21,9 +21,9 @@ function Icon({ item, n }: { item: IconProduct; n: number }) {
     const io = new IntersectionObserver(
       ([e]) => {
         if (!e.isIntersecting) return;
-        // Once real art exists it becomes the hero, so the 3D object steps
-        // aside rather than sitting on top of the photograph.
-        claimStage(art ? null : slot.current);
+        // Photography is the hero here. The 3D stand-in stays out of the
+        // frame entirely; the world it brings still changes.
+        claimStage(null);
         set({ world: `shoe:${item.shoeId}`, formId: item.shoeId });
       },
       { threshold: 0.45 }

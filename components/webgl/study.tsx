@@ -47,6 +47,7 @@ export function Study({ tier }: { tier: Tier }) {
   const tint = useRef(new THREE.Color("#A9C6D8"));
   const goal = useRef(new THREE.Color("#A9C6D8"));
   const punch = useRef(0);
+  const presence = useRef(1);
 
 
   const geo = useMemo(
@@ -111,12 +112,18 @@ export function Study({ tier }: { tier: Tier }) {
        world: a night turf pitch is nervous, an archive is nearly still. */
     const spin = world.spin;
     g.rotation.y = t * 0.14 * spin + raw.progress * Math.PI * 0.5;
-    // Tipped toward the viewer so the tread is actually facing us. Angled the
-    // other way, the whole point of the study — this shoe's own tread — was
-    // hidden on the underside.
-    g.rotation.x = -0.52 + Math.sin(t * 0.22 * spin) * 0.05;
+    g.rotation.x = 0.42 + Math.sin(t * 0.22 * spin) * 0.05;
     g.rotation.z = Math.sin(t * 0.17 * spin) * 0.05;
     g.position.y = Math.sin(t * 0.45 * spin) * 0.03;
+
+    /* The study only appears where it earns its place: the hero, where it is
+       an abstract opening, and the lab, where the exploded cross-section is
+       genuinely explanatory. In the icon section, the berths and the campaign
+       scenes, photography is the hero — a stand-in sitting inside a labelled
+       frame is worse than the frame alone. */
+    const wanted = raw.phase === "hero" || raw.phase === "brands" || raw.phase === "lab";
+    presence.current += ((wanted ? 1 : 0) - presence.current) * Math.min(1, dt * 2.6);
+    g.visible = presence.current > 0.02;
 
     punch.current += (0 - punch.current) * Math.min(1, dt * 4);
     g.scale.setScalar(1 + punch.current * 0.07);
@@ -130,7 +137,7 @@ export function Study({ tier }: { tier: Tier }) {
       }
       if (mat) {
         const dim = exploding && activeLayer !== "all" && activeLayer !== name;
-        const want = dim ? 0.16 : 1;
+        const want = (dim ? 0.16 : 1) * presence.current;
         mat.opacity += (want - mat.opacity) * k;
         mat.transparent = mat.opacity < 0.985;
         mat.depthWrite = !mat.transparent;

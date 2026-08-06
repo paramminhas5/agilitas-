@@ -21,10 +21,8 @@ function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: numbe
       ([e]) => {
         if (!e.isIntersecting) return;
         onEnter(i);
-        // Hand the object this berth's reserved box, its silhouette and its
-        // world — unless real art has landed, in which case the photograph
-        // is the hero and the object steps aside.
-        claimStage(art ? null : slot.current);
+        // The berth frame belongs to the photograph. Only the world changes.
+        claimStage(null);
         set({ world: `shoe:${shoe.id}`, formId: shoe.id });
       },
       { threshold: 0.5 }

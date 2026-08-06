@@ -81,9 +81,11 @@ export function Particles({ count }: { count: number }) {
     attr.needsUpdate = true;
 
     // Ease the look so a world change is a shift in weather, not a cut.
+    // Pale particulate vanishes on paper, so in light mode the air darkens.
+    const light = raw.mode === "light";
     size.current += (b.size - size.current) * k;
-    alpha.current += (b.alpha - alpha.current) * k;
-    goal.current.set(b.tint);
+    alpha.current += ((light ? b.alpha * 0.72 : b.alpha) - alpha.current) * k;
+    goal.current.set(light ? "#6B6A63" : b.tint);
     tint.current.lerp(goal.current, k);
 
     const mat = p.material as THREE.PointsMaterial;

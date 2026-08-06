@@ -23,6 +23,7 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
   const content = useRef<THREE.Group>(null);
   const key = useRef<THREE.PointLight>(null);
   const fill = useRef<THREE.PointLight>(null);
+  const amb = useRef<THREE.AmbientLight>(null);
   const formId = useSceneValue((s) => s.formId);
 
   /* The object's true size, measured rather than assumed. A bounding sphere,
@@ -131,19 +132,28 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
       fill.current.intensity += (world.fillIntensity - fill.current.intensity) * k;
     }
 
+    /* In light mode the whole scene inverts: objects have to recede into
+       paper rather than into black, so the fog target becomes the light
+       surface and the ambient lifts to match. */
+    const light = raw.mode === "light";
+
     const fog = st.scene.fog as THREE.Fog | null;
     if (fog) {
-      tmp.current.set(world.fog);
+      tmp.current.set(light ? "#F4F2ED" : world.fog);
       fogCol.current.lerp(tmp.current, k);
       fog.color.copy(fogCol.current);
-      fog.near += (world.fogNear - fog.near) * k;
-      fog.far += (world.fogFar - fog.far) * k;
+      fog.near += ((light ? world.fogNear + 1.5 : world.fogNear) - fog.near) * k;
+      fog.far += ((light ? world.fogFar + 6 : world.fogFar) - fog.far) * k;
+    }
+
+    if (amb.current) {
+      amb.current.intensity += ((light ? 1.5 : 0.42) - amb.current.intensity) * k;
     }
   });
 
   return (
     <>
-      <ambientLight intensity={0.42} />
+      <ambientLight ref={amb} intensity={0.42} />
       <pointLight ref={key} position={[2.6, 2.4, 3.2]} intensity={24} distance={16} decay={2} />
       <pointLight ref={fill} position={[-3.2, -1.4, 2.2]} intensity={10} distance={13} decay={2} />
       <directionalLight position={[-1.5, 3, -2]} intensity={0.4} color="#CFE6F2" />

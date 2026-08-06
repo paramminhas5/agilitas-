@@ -27,15 +27,20 @@ export type IconProduct = {
   line: string;
 };
 
+/*
+ * Ordered deliberately: two Lotto on white, then the page turns dark for one8.
+ * The section walks the brand story rather than listing three products —
+ * you start on cement, you take on the whole year, then you get serious.
+ */
 export const ICONS: IconProduct[] = [
   {
-    shoeId: "reverse",
-    brand: "ONE8",
-    formal: "one8 Reverse",
-    street: "The Kohli 1s",
-    metric: "3.34M",
-    metricLabel: "Tennis-ball matches a year, and no shoe built for them",
-    line: "The sport most of India actually plays has never had a shoe. This is it.",
+    shoeId: "alleys",
+    brand: "LOTTO",
+    formal: "Lotto Alleys",
+    street: "The Alleys",
+    metric: "3",
+    metricLabel: "Court sports, plus the walk home",
+    line: "Indian courts are cement, not sprung wood. Every court shoe here ignored that.",
   },
   {
     shoeId: "traktor",
@@ -47,12 +52,12 @@ export const ICONS: IconProduct[] = [
     line: "Everyone designs for the monsoon. Nobody designs for the whole Indian year.",
   },
   {
-    shoeId: "alleys",
-    brand: "LOTTO",
-    formal: "Lotto Alleys",
-    street: "The Alleys",
-    metric: "3",
-    metricLabel: "Court sports, plus the walk home",
-    line: "Indian courts are cement, not sprung wood. Every court shoe here ignored that.",
+    shoeId: "reverse",
+    brand: "ONE8",
+    formal: "one8 Reverse",
+    street: "The Kohli 1s",
+    metric: "3.34M",
+    metricLabel: "Tennis-ball matches a year, and no shoe built for them",
+    line: "The sport most of India actually plays has never had a shoe. This is it.",
   },
 ];

@@ -3,90 +3,113 @@
 import { useEffect, useRef, useState } from "react";
 import { shoes, technologies, type Shoe } from "@/data/products";
 import { Split } from "@/components/ui/split";
+import { Chapter } from "@/components/ui/chapter";
+import { BrandMark } from "@/components/ui/brand-mark";
+import { AssetImage } from "@/components/ui/asset";
 import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
 import { artFor, wantArt } from "@/lib/assets";
-import { AssetImage } from "@/components/ui/asset";
+import { accentFor, modeForBrand } from "@/lib/theme";
 
-function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: number) => void }) {
-  const ref = useRef<HTMLElement>(null);
-  const slot = useRef<HTMLDivElement>(null);
+const LOTTO = shoes.filter((s) => s.brand === "LOTTO");
+const ONE8 = shoes.filter((s) => s.brand === "ONE8");
+
+/** A full-bleed break so the two brands never blur into one another. */
+function BrandBreak({
+  brand, count, axis,
+}: {
+  brand: "LOTTO" | "ONE8";
+  count: number;
+  axis: string;
+}) {
+  const mode = modeForBrand(brand);
+  return (
+    <Chapter mode={mode} className="chapmark" threshold={0.5}>
+      <div className="wrap chapmark__inner">
+        <BrandMark brand={brand} mode={mode} size={40} />
+        <div className="chapmark__meta">
+          <span className="chapmark__count">
+            {String(count).padStart(2, "0")} {count === 1 ? "shoe" : "shoes"}
+          </span>
+          <span className="chapmark__axis">{axis}</span>
+        </div>
+      </div>
+    </Chapter>
+  );
+}
+
+
+function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (i: number) => void }) {
   const techs = technologies.filter((t) => shoe.technologies.includes(t.id));
   const art = artFor(shoe.id);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
-        onEnter(i);
-        // The berth frame belongs to the photograph. Only the world changes.
-        claimStage(null);
-        set({ world: `shoe:${shoe.id}`, formId: shoe.id });
-      },
-      { threshold: 0.5 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [i, onEnter, shoe.id, art]);
+  const mode = modeForBrand(shoe.brand);
+  const accent = accentFor(shoe.accent, mode);
 
   return (
-    <section
-      className="berth vent"
+    <Chapter
+      mode={mode}
       id={`shoe-${shoe.id}`}
-      ref={ref}
-      style={{ ["--accent" as string]: shoe.accent }}
+      className="berth"
+      threshold={0.5}
+      style={{ ["--accent" as string]: accent }}
+      onEnter={() => {
+        onEnter(index);
+        claimStage(null);
+        set({ world: `shoe:${shoe.id}`, formId: shoe.id });
+      }}
     >
-      <div className="berth__inner">
+      <div className="berth__inner" style={{ ["--accent" as string]: accent }}>
         <div className="berth__lead">
-          <div className="berth__badge" style={{ color: shoe.accent, borderColor: `${shoe.accent}44` }}>
+          <div className="berth__badge" style={{ color: accent, borderColor: `${accent}55` }}>
             {shoe.brand} — {String(shoe.order).padStart(2, "0")} / 11
           </div>
 
-          <h2 className="berth__name" style={{ color: shoe.accent }}>
+          <h2 className="berth__name" style={{ color: accent }}>
             <Split text={shoe.name} stagger={34} />
           </h2>
           <p className="berth__sub">{shoe.subtitle}</p>
           <p className="berth__why">{shoe.whyWeMadeIt}</p>
 
-          {/* The single most important sentence on the page gets to behave
-              like one, instead of being buried in a box. */}
-          <p className="berth__value rise" style={{ ["--accent" as string]: shoe.accent }}>
-            {shoe.value}
-          </p>
-
-
-          <div className="deck rise">
-            <div className="deck__cell">
-              <span className="deck__code deck__code--a">A</span>
-              <div className="deck__label">{shoe.purposeA.label}</div>
-              <div className="deck__text">{shoe.purposeA.description}</div>
-            </div>
-            <div className="deck__cell">
-              <span className="deck__code deck__code--b">B</span>
-              <div className="deck__label">{shoe.purposeB.label}</div>
-              <div className="deck__text">{shoe.purposeB.description}</div>
-            </div>
-            <div className="deck__cell">
-              <span className="deck__code deck__code--s">S</span>
-              <div className="deck__label">{shoe.purposeS.label}</div>
-              <div className="deck__text">{shoe.purposeS.description}</div>
-            </div>
+          {/* The value, labelled. It was already here as the statement line,
+              but without its label it stopped reading as the value. */}
+          <div className="berth__value rise">
+            <span className="berth__value-k">The value</span>
+            <p className="berth__value-v">{shoe.value}</p>
           </div>
 
-          <div className="strip rise rise-d1">
-            <div className="strip__cell">
+
+          {/* Each cell arrives on its own, so the panel assembles as you
+              scroll rather than appearing complete. */}
+          <div className="deck">
+            {([
+              ["A", shoe.purposeA],
+              ["B", shoe.purposeB],
+              ["S", shoe.purposeS],
+            ] as const).map(([code, p], i) => (
+              <div
+                className="deck__cell rise"
+                key={code}
+                style={{ transitionDelay: `${120 + i * 130}ms` }}
+              >
+                <span className={`deck__code deck__code--${code.toLowerCase()}`}>{code}</span>
+                <div className="deck__label">{p.label}</div>
+                <div className="deck__text">{p.description}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="strip">
+            <div className="strip__cell rise" style={{ transitionDelay: "540ms" }}>
               <div className="strip__title">Features &amp; specs</div>
               <div className="strip__text">{shoe.features}</div>
             </div>
-            <div className="strip__cell">
+            <div className="strip__cell rise" style={{ transitionDelay: "650ms" }}>
               <div className="strip__title">Who it&apos;s for</div>
               <div className="strip__text">{shoe.whoItsFor}</div>
             </div>
           </div>
 
-          <div className="berth__chips rise rise-d2">
+          <div className="berth__chips rise" style={{ transitionDelay: "760ms" }}>
             {techs.map((t) => (
               <button key={t.id} className="chip" data-cur="Inspect" onClick={() => goTo("lab")}>
                 {t.name}
@@ -95,10 +118,7 @@ function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: numbe
           </div>
         </div>
 
-
-        {/* Reserved column. The 3D object is projected into this exact box,
-            so it can never overlap the copy. Real art replaces it. */}
-        <div className="berth__void slot" ref={slot}>
+        <div className="berth__void">
           <AssetImage
             src={art}
             want={wantArt(shoe.id)}
@@ -108,15 +128,15 @@ function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: numbe
           />
         </div>
       </div>
-    </section>
+    </Chapter>
   );
 }
 
 
 export function Journey() {
   const [active, setActive] = useState(-1);
-  const ref = useRef<HTMLDivElement>(null);
   const [hud, setHud] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   const onEnter = (i: number) => {
     setActive(i);
@@ -126,10 +146,10 @@ export function Journey() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const io = new IntersectionObserver(
-      ([e]) => setHud(e.isIntersecting),
-      { threshold: 0, rootMargin: "-18% 0px -18% 0px" }
-    );
+    const io = new IntersectionObserver(([e]) => setHud(e.isIntersecting), {
+      threshold: 0,
+      rootMargin: "-18% 0px -18% 0px",
+    });
     io.observe(el);
     return () => {
       io.disconnect();
@@ -139,23 +159,27 @@ export function Journey() {
 
   return (
     <div className="journey" id="journey" ref={ref}>
-      <div className="wrap bay--tight">
-        <div className="eyebrow rise">The lineup — eleven shoes</div>
-        <h2 className="h-lg" style={{ maxWidth: "20ch" }}>
-          <Split text="Built backwards" stagger={26} />
-          <Split text="from reality." className="chrome" stagger={26} delay={190} />
-        </h2>
-        <p className="body-lg rise rise-d2" style={{ maxWidth: "54ch", marginTop: "1.4rem" }}>
-          A — the reason you buy it. B — the bonus. S — the surprise that seals
-          it. One shoe, three uses, stated plainly every time.
-        </p>
-      </div>
+      <Chapter mode="dark" className="bay--tight">
+        <div className="wrap">
+          <div className="eyebrow rise">The lineup — eleven shoes</div>
+          <h2 className="h-lg" style={{ maxWidth: "20ch" }}>
+            <Split text="Built backwards" stagger={26} />
+            <Split text="from reality." className="chrome" stagger={26} delay={190} />
+          </h2>
+          <p className="body-lg rise rise-d2" style={{ maxWidth: "54ch", marginTop: "1.4rem" }}>
+            A — the reason you buy it. B — the bonus. S — the surprise that
+            seals it. Eight organised by surface, three by the day.
+          </p>
+        </div>
+      </Chapter>
 
       <div className={`hud ${hud ? "is-on" : ""}`}>
         {shoes.map((s, i) => (
           <button
             key={s.id}
-            className={`hud__tick ${i === active ? "is-on" : ""}`}
+            className={`hud__tick ${i === active ? "is-on" : ""} ${
+              s.brand === "ONE8" ? "hud__tick--one8" : ""
+            }`}
             onClick={() => goTo(`shoe-${s.id}`)}
             data-cur={s.name}
           >
@@ -165,8 +189,14 @@ export function Journey() {
         ))}
       </div>
 
-      {shoes.map((s, i) => (
-        <Berth key={s.id} shoe={s} i={i} onEnter={onEnter} />
+      <BrandBreak brand="LOTTO" count={LOTTO.length} axis="Engineered by surface" />
+      {LOTTO.map((s) => (
+        <Berth key={s.id} shoe={s} index={shoes.indexOf(s)} onEnter={onEnter} />
+      ))}
+
+      <BrandBreak brand="ONE8" count={ONE8.length} axis="Engineered by day" />
+      {ONE8.map((s) => (
+        <Berth key={s.id} shoe={s} index={shoes.indexOf(s)} onEnter={onEnter} />
       ))}
     </div>
   );

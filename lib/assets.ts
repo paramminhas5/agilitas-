@@ -58,3 +58,25 @@ export function assetProgress() {
     films: n(campaignFilm),
   };
 }
+
+
+
+/* ── Brand marks ─────────────────────────────────────────────────────────── */
+
+import { brandMark } from "./generated-assets";
+
+/**
+ * Logo for a brand on a given surface. Looks for a `-light` variant first when
+ * sitting on a dark surface, so one8-light.svg can differ from one8.svg.
+ *
+ *   /public/brand/lotto.svg
+ *   /public/brand/one8.svg
+ *   /public/brand/one8-light.svg   (optional, used on dark)
+ */
+export function markFor(brand: "LOTTO" | "ONE8", mode: "light" | "dark") {
+  const id = brand.toLowerCase();
+  if (mode === "dark" && brandMark[`${id}-light`]) return brandMark[`${id}-light`];
+  return brandMark[id] ?? null;
+}
+
+export const wantMark = (brand: "LOTTO" | "ONE8") => `brand/${brand.toLowerCase()}.svg`;

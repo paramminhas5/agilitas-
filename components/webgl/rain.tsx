@@ -51,7 +51,10 @@ export function Rain({ count }: { count: number }) {
     on.current += ((wet ? 1 : 0) - on.current) * Math.min(1, dt * 2.4);
 
     const mat = im.material as THREE.MeshBasicMaterial;
-    mat.opacity = on.current * 0.5;
+    const light = raw.mode === "light";
+    // Bright streaks disappear against paper; darken and firm them up.
+    mat.color.set(light ? "#5E7686" : "#D8EEFA");
+    mat.opacity = on.current * (light ? 0.42 : 0.5);
     im.visible = on.current > 0.02;
     if (!im.visible) return;
 

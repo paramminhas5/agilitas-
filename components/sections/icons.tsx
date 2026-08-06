@@ -1,49 +1,41 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { ICONS, type IconProduct } from "@/lib/icons";
 import { shoes } from "@/data/products";
 import { Split } from "@/components/ui/split";
 import { AssetImage } from "@/components/ui/asset";
+import { Chapter } from "@/components/ui/chapter";
+import { BrandMark } from "@/components/ui/brand-mark";
 import { artFor, wantArt } from "@/lib/assets";
 import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
+import { accentFor, modeForBrand } from "@/lib/theme";
 
 function Icon({ item, n }: { item: IconProduct; n: number }) {
-  const ref = useRef<HTMLElement>(null);
-  const slot = useRef<HTMLDivElement>(null);
   const shoe = shoes.find((s) => s.id === item.shoeId);
   const art = artFor(item.shoeId);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([e]) => {
-        if (!e.isIntersecting) return;
-        // Photography is the hero here. The 3D stand-in stays out of the
-        // frame entirely; the world it brings still changes.
-        claimStage(null);
-        set({ world: `shoe:${item.shoeId}`, formId: item.shoeId });
-      },
-      { threshold: 0.45 }
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [item.shoeId, art]);
+  const mode = modeForBrand(item.brand);
+  const accent = accentFor(shoe?.accent ?? "#A9C6D8", mode);
 
   return (
-    <section
-      className="icon"
+    <Chapter
+      mode={mode}
       id={`icon-${item.shoeId}`}
-      ref={ref}
-      style={{ ["--accent" as string]: shoe?.accent ?? "var(--signal)" }}
+      className="icon"
+      threshold={0.45}
+      style={{ ["--accent" as string]: accent }}
+      onEnter={() => {
+        // Photography is the hero here; the stand-in stays out of the frame.
+        claimStage(null);
+        set({ world: `shoe:${item.shoeId}`, formId: item.shoeId });
+      }}
     >
-      <div className="icon__inner">
+      <div className="icon__inner" style={{ ["--accent" as string]: accent }}>
         <div className="icon__lead">
           <div className="icon__index">
-            {String(n).padStart(2, "0")} / 03 — {item.brand}
+            {String(n).padStart(2, "0")} / 03
           </div>
+          <BrandMark brand={item.brand} mode={mode} size={26} className="icon__mark" />
           <div className="icon__formal">{item.formal}</div>
           <h2 className="icon__street">
             <Split text={item.street} stagger={34} />
@@ -66,7 +58,7 @@ function Icon({ item, n }: { item: IconProduct; n: number }) {
           </button>
         </div>
 
-        <div className="icon__stage slot" ref={slot}>
+        <div className="icon__stage">
           <AssetImage
             src={art}
             want={wantArt(item.shoeId)}
@@ -77,24 +69,26 @@ function Icon({ item, n }: { item: IconProduct; n: number }) {
           />
         </div>
       </div>
-    </section>
+    </Chapter>
   );
 }
 
 export function Icons() {
   return (
     <div id="icons">
-      <div className="wrap bay--tight">
-        <div className="eyebrow rise">The icons — three that lead</div>
-        <h2 className="h-lg" style={{ maxWidth: "20ch" }}>
-          <Split text="Three shoes" stagger={26} />
-          <Split text="carry the line." className="chrome" stagger={26} delay={180} />
-        </h2>
-        <p className="body-lg rise rise-d2" style={{ maxWidth: "52ch", marginTop: "1.4rem" }}>
-          Every brand has a shoe people name themselves. These are ours — the
-          flagship, the everyday, and the one that started on cement.
-        </p>
-      </div>
+      <Chapter mode="dark" className="bay--tight">
+        <div className="wrap">
+          <div className="eyebrow rise">The icons — three that lead</div>
+          <h2 className="h-lg" style={{ maxWidth: "20ch" }}>
+            <Split text="Three shoes" stagger={26} />
+            <Split text="carry the line." className="chrome" stagger={26} delay={180} />
+          </h2>
+          <p className="body-lg rise rise-d2" style={{ maxWidth: "52ch", marginTop: "1.4rem" }}>
+            Every brand has a shoe people name themselves. Two start on cement
+            and in the rain. The third is where it gets serious.
+          </p>
+        </div>
+      </Chapter>
 
       {ICONS.map((item, i) => (
         <Icon key={item.shoeId} item={item} n={i + 1} />

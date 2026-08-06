@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 import { Cursor, RevealScope } from "@/components/ui/cursor";
+import { Backdrop } from "@/components/ui/chapter";
 import { Hero } from "@/components/sections/hero";
+import { Vision } from "@/components/sections/vision";
+import { System } from "@/components/sections/system";
 import { Icons } from "@/components/sections/icons";
-import { Brands } from "@/components/sections/brands";
 import { Lab } from "@/components/sections/lab";
 import { Journey } from "@/components/sections/journey";
 import { Scenes } from "@/components/sections/scenes";
@@ -21,6 +23,7 @@ import { useSceneValue } from "@/lib/store";
 const Stage = dynamic(() => import("@/components/webgl/stage"), { ssr: false });
 
 const NAV = [
+  { id: "system", label: "The Two" },
   { id: "icons", label: "The Icons" },
   { id: "lab", label: "Technology" },
   { id: "journey", label: "The Eleven" },
@@ -47,8 +50,9 @@ export function Experience() {
   useEffect(() => {
     const map: [string, Parameters<typeof markPhase>[1]][] = [
       ["hero", "hero"],
+      ["vision", "brands"],
+      ["system", "brands"],
       ["icons", "icons"],
-      ["brands", "brands"],
       ["lab", "lab"],
       ["journey", "journey"],
       ["scenes", "scenes"],
@@ -65,6 +69,7 @@ export function Experience() {
 
   return (
     <div className="shell" ref={shell}>
+      <Backdrop />
       {ready && <Stage tier={tier} />}
 
       <div className="grain" aria-hidden />
@@ -99,10 +104,9 @@ export function Experience() {
 
       <main>
         <Hero />
+        <Vision />
+        <System />
         <Icons />
-        <div className="hair" />
-        <Brands />
-        <div className="hair" />
         <Lab />
         <div className="hair" />
         <Journey />

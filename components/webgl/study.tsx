@@ -63,7 +63,7 @@ export function Study({ tier }: { tier: Tier }) {
 
   const mats = useMemo(
     () => ({
-      outsole: new THREE.MeshPhysicalMaterial({ color: "#0E1214", roughness: 0.9, metalness: 0.08 }),
+      outsole: new THREE.MeshPhysicalMaterial({ color: "#14181B", roughness: 0.9, metalness: 0.08 }),
       midsole: new THREE.MeshPhysicalMaterial({
         color: "#A9C6D8", roughness: 0.5, metalness: 0.16,
         clearcoat: detail ? 0.5 : 0, clearcoatRoughness: 0.45,

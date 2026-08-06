@@ -123,7 +123,7 @@ Object.assign(WORLDS, {
     ground: { color: "#0B1218", rough: 0.12, metal: 0.55, opacity: 0.8, grid: false },
     spin: 0.9,
   }),
-  "shoe:doorway": w({
+  "shoe:barefoot-nps": w({
     label: "The threshold",
     fog: "#08090C",
     key: "#FFF3E2",
@@ -168,7 +168,7 @@ Object.assign(WORLDS, {
     ground: { color: "#141A18", rough: 0.98, metal: 0, opacity: 0.6, grid: false },
     spin: 0.4,
   }),
-  "shoe:session": w({
+  "shoe:dad-shoe": w({
     label: "Street, dusk",
     fog: "#08070D",
     key: "#FFE9D0",
@@ -232,7 +232,7 @@ Object.assign(WORLDS, {
 
 
 Object.assign(WORLDS, {
-  "shoe:everyday-mid": w({
+  "shoe:community-halls": w({
     label: "Neutral studio",
     fog: "#08090A",
     fogNear: 6.5,

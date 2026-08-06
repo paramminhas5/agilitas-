@@ -22,5 +22,5 @@ replaces the stand-in for that shoe only; the rest keep working.
 
 **Shoe ids**
 
-`alleys` · `traktor` · `doorway` · `nightshift` · `beta` · `session` ·
-`reverse` · `train` · `recover` · `everyday-mid` · `1973`
+`alleys` · `traktor` · `barefoot-nps` · `nightshift` · `beta` · `dad-shoe` ·
+`reverse` · `train` · `recover` · `community-halls` · `1973`

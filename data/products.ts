@@ -133,8 +133,8 @@ export const shoes: Shoe[] = [
     features: "Grip Rubber Hard survives cement grit; low stable build; Fold Heel for easy on-off; Second Skin sole reveals street tread over a year.",
     whoItsFor: "The 6 a.m. player — books a half-court before work, plays four times a week, owns one pair.",
     technologies: ["ground-last", "grip-rubber", "fold-heel", "second-skin"],
-    accent: "#FF6B35",
-    palette: ["#1a1a1a", "#FF6B35", "#2d2d2d"],
+    accent: "#7DF9E8",
+    palette: ["#070A0B", "#7DF9E8", "#12201F"],
   },
   {
     id: "traktor",
@@ -150,8 +150,8 @@ export const shoes: Shoe[] = [
     features: "Three weather modes with Heat-Stable Foam, Dry System's real pump for rain, Two-Ground Sole that grips wet and rocky ground at once.",
     whoItsFor: "Everybody, for a different reason each season. The least niche shoe in the line.",
     technologies: ["ground-last", "dry-system", "two-ground-sole", "heat-stable-foam", "second-skin"],
-    accent: "#4ECDC4",
-    palette: ["#0a0f0e", "#4ECDC4", "#1a2f2c"],
+    accent: "#5FB8FF",
+    palette: ["#06090D", "#5FB8FF", "#111C28"],
   },
 
   {
@@ -168,8 +168,8 @@ export const shoes: Shoe[] = [
     features: "Fold Heel folds flat and springs back; Resole construction keeps it going; Fresh Lining stops smell worn barefoot-style all day.",
     whoItsFor: "The whole country — the entry point to the brand.",
     technologies: ["ground-last", "fold-heel", "resole", "fresh-lining"],
-    accent: "#F7DC6F",
-    palette: ["#1a1810", "#F7DC6F", "#2d2a1a"],
+    accent: "#A9C6D8",
+    palette: ["#080A0C", "#A9C6D8", "#171E23"],
   },
   {
     id: "nightshift",
@@ -185,8 +185,8 @@ export const shoes: Shoe[] = [
     features: "Two-Ground Sole turf-tuned with multi-directional nubs; low fast build; Second Skin reveals fresh tread over time.",
     whoItsFor: "The after-work city player who books the late slot.",
     technologies: ["ground-last", "two-ground-sole", "second-skin"],
-    accent: "#BB86FC",
-    palette: ["#0d0a1a", "#BB86FC", "#1a1530"],
+    accent: "#8A7CFF",
+    palette: ["#07070E", "#8A7CFF", "#141126"],
   },
 
   {
@@ -203,8 +203,8 @@ export const shoes: Shoe[] = [
     features: "Flat comfortable last; Grip Rubber Soft for stick; Fresh Lining for shared rental pairs.",
     whoItsFor: "The new and regular gym climber — the 95% the industry has ignored.",
     technologies: ["ground-last", "grip-rubber", "fresh-lining"],
-    accent: "#00E676",
-    palette: ["#0a1a0e", "#00E676", "#1a2d1e"],
+    accent: "#6FE3C4",
+    palette: ["#060B0A", "#6FE3C4", "#101F1B"],
   },
   {
     id: "session",
@@ -220,8 +220,8 @@ export const shoes: Shoe[] = [
     features: "Genuine vulcanized construction; reinforced medial forefoot; Resole so a favourite pair lasts; Second Skin.",
     whoItsFor: "Skaters for credibility; everyone else for volume. Lotto's lifestyle flagship.",
     technologies: ["ground-last", "second-skin", "resole"],
-    accent: "#FF4081",
-    palette: ["#1a0a10", "#FF4081", "#2d1520"],
+    accent: "#B9A8FF",
+    palette: ["#08070D", "#B9A8FF", "#161327"],
   },
 
   {
@@ -238,8 +238,8 @@ export const shoes: Shoe[] = [
     features: "Moulded dual-density studs for cement/matting; Grip Rubber Hard; Rate-Sensitive Midsole; replaceable drag-toe.",
     whoItsFor: "The 19–28 club and gully cricketer who's never owned a shoe built for his actual ground.",
     technologies: ["ground-last", "grip-rubber"],
-    accent: "#E61935",
-    palette: ["#1a0a0d", "#E61935", "#2d1520"],
+    accent: "#4FD8E8",
+    palette: ["#05090B", "#4FD8E8", "#0F1F24"],
   },
   {
     id: "train",
@@ -255,8 +255,8 @@ export const shoes: Shoe[] = [
     features: "Rate-Sensitive Midsole; Fold Heel; Foot Sensor with injury-risk training-load tracker.",
     whoItsFor: "The same player as Reverse, six days a week, in a room nobody's filming.",
     technologies: ["ground-last", "fold-heel", "foot-sensor"],
-    accent: "#FF9100",
-    palette: ["#1a1208", "#FF9100", "#2d2010"],
+    accent: "#86A6FF",
+    palette: ["#06080D", "#86A6FF", "#121827"],
   },
 
   {
@@ -273,8 +273,8 @@ export const shoes: Shoe[] = [
     features: "Low-rebound absorbing foam; Resole; Fresh Lining; Heat-Stable Foam for summer.",
     whoItsFor: "Everyone who just trained hard — then everyone in their house.",
     technologies: ["ground-last", "resole", "fresh-lining", "heat-stable-foam"],
-    accent: "#7C4DFF",
-    palette: ["#0d0a1a", "#7C4DFF", "#1a1530"],
+    accent: "#9D8CFF",
+    palette: ["#07060E", "#9D8CFF", "#151228"],
   },
   {
     id: "everyday-mid",
@@ -290,8 +290,8 @@ export const shoes: Shoe[] = [
     features: "Leather construction; Resole system; Ground Last.",
     whoItsFor: "The person who wants one shoe that works everywhere, dressed up or down.",
     technologies: ["ground-last", "resole"],
-    accent: "#8D6E63",
-    palette: ["#1a1510", "#8D6E63", "#2d251a"],
+    accent: "#C3CBD1",
+    palette: ["#08090A", "#C3CBD1", "#171A1D"],
   },
   {
     id: "1973",
@@ -307,8 +307,8 @@ export const shoes: Shoe[] = [
     features: "Ground Last; premium materials; held for collaborator interpretation.",
     whoItsFor: "The collector and collaborator — earned, not manufactured.",
     technologies: ["ground-last"],
-    accent: "#D4AF37",
-    palette: ["#1a1808", "#D4AF37", "#2d2a10"],
+    accent: "#D8CFA8",
+    palette: ["#0A0A08", "#D8CFA8", "#1D1C16"],
   },
 ];
 

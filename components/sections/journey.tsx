@@ -10,6 +10,7 @@ import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
 import { artFor, wantArt, modelFor } from "@/lib/assets";
 import { OrbitSlot } from "@/components/ui/orbit-slot";
+import { AmbienceLayer } from "@/components/ui/ambience";
 import { accentFor, modeForBrand } from "@/lib/theme";
 
 const LOTTO = shoes.filter((s) => s.brand === "LOTTO");
@@ -63,7 +64,9 @@ function useBerthStep(track: React.RefObject<HTMLElement | null>, steps = 5) {
       const span = r.height - window.innerHeight;
       if (span <= 0) return setStep(steps);
       const p = Math.min(1, Math.max(0, -r.top / span));
-      const next = Math.min(steps, Math.floor(p * (steps + 1)));
+      // Complete by ~60% of the track, so the last stretch is release rather
+      // than the reader still waiting for content.
+      const next = Math.min(steps, Math.floor((p / 0.6) * steps));
       setStep((prev) => (prev === next ? prev : next));
     };
     const onScroll = () => { if (!frame) frame = requestAnimationFrame(read); };
@@ -88,7 +91,8 @@ function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (
   const accent = accentFor(shoe.accent, mode);
   const slot = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLElement>(null);
-  const step = useBerthStep(track);
+  // 4 stages now: A, B, S, then the spec strip. Why and the value are always on.
+  const step = useBerthStep(track, 4);
   const on = (n: number) => (step >= n ? "stg-in" : "");
 
   return (
@@ -107,6 +111,8 @@ function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (
         set({ world: `shoe:${shoe.id}`, formId: shoe.id });
       }}
     >
+      <AmbienceLayer world={`shoe:${shoe.id}`} />
+
       <div className="berth__pin">
       <div className="berth__inner" style={{ ["--accent" as string]: accent }}>
         <div className="berth__lead">
@@ -118,18 +124,15 @@ function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (
             <Split text={shoe.name} stagger={34} />
           </h2>
           <p className="berth__sub">{shoe.subtitle}</p>
-          <p className={`berth__why stg ${on(1)}`}>{shoe.whyWeMadeIt}</p>
+          {/* Present from the moment you arrive. Staging these behind a scrub
+              meant landing on a shoe and being shown almost nothing. */}
+          <p className="berth__why">{shoe.whyWeMadeIt}</p>
 
-          {/* The value, labelled. It was already here as the statement line,
-              but without its label it stopped reading as the value. */}
-          <div className={`berth__value stg ${on(1)}`}>
+          <div className="berth__value">
             <span className="berth__value-k">The value</span>
             <p className="berth__value-v">{shoe.value}</p>
           </div>
 
-
-          {/* Each cell arrives on its own, so the panel assembles as you
-              scroll rather than appearing complete. */}
           {/* A, then B, then S — each arrives on its own as you scroll the
               pinned berth, so the argument is made in order. */}
           <div className="deck">
@@ -138,7 +141,7 @@ function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (
               ["B", shoe.purposeB],
               ["S", shoe.purposeS],
             ] as const).map(([code, p], i) => (
-              <div className={`deck__cell stg ${on(2 + i)}`} key={code}>
+              <div className={`deck__cell stg ${on(1 + i)}`} key={code}>
                 <span className={`deck__code deck__code--${code.toLowerCase()}`}>{code}</span>
                 <div className="deck__label">{p.label}</div>
                 <div className="deck__text">{p.description}</div>
@@ -147,17 +150,17 @@ function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (
           </div>
 
           <div className="strip">
-            <div className={`strip__cell stg ${on(5)}`}>
+            <div className={`strip__cell stg ${on(4)}`}>
               <div className="strip__title">Features &amp; specs</div>
               <div className="strip__text">{shoe.features}</div>
             </div>
-            <div className={`strip__cell stg ${on(5)}`}>
+            <div className={`strip__cell stg ${on(4)}`}>
               <div className="strip__title">Who it&apos;s for</div>
               <div className="strip__text">{shoe.whoItsFor}</div>
             </div>
           </div>
 
-          <div className={`berth__chips stg ${on(5)}`}>
+          <div className={`berth__chips stg ${on(4)}`}>
             {techs.map((t) => (
               <button key={t.id} className="chip" data-cur="Inspect" onClick={() => goTo("lab")}>
                 {t.name}
@@ -184,7 +187,7 @@ function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (
 
       {/* Progress through this one shoe */}
       <div className="berth__meter" aria-hidden>
-        <span style={{ transform: `scaleX(${step / 5})` }} />
+        <span style={{ transform: `scaleX(${step / 4})` }} />
       </div>
     </Chapter>
   );

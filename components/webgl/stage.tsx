@@ -15,6 +15,9 @@ import { Particles } from "./particles";
 import { Rain } from "./rain";
 import { Ground } from "./ground";
 
+/** The Lotto surface, as a colour the scene can be blended toward. */
+const PAPER = new THREE.Color("#F4F2ED");
+
 /** Fallback placement for regions that reserve no box of their own. */
 const DRIFT: Record<string, [number, number]> = {
   brands: [0.66, -0.12],
@@ -170,22 +173,21 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
       fill.current.intensity += (world.fillIntensity - fill.current.intensity) * k;
     }
 
-    /* In light mode the whole scene inverts: objects have to recede into
-       paper rather than into black, so the fog target becomes the light
-       surface and the ambient lifts to match. */
-    const light = raw.mode === "light";
+    /* The scene inverts by the same continuous amount as the page, so objects
+       recede into paper or into black without either ever snapping. */
+    const L = raw.light;
 
     const fog = st.scene.fog as THREE.Fog | null;
     if (fog) {
-      tmp.current.set(light ? "#F4F2ED" : world.fog);
+      tmp.current.set(world.fog).lerp(PAPER, L);
       fogCol.current.lerp(tmp.current, k);
       fog.color.copy(fogCol.current);
-      fog.near += ((light ? world.fogNear + 1.5 : world.fogNear) - fog.near) * k;
-      fog.far += ((light ? world.fogFar + 6 : world.fogFar) - fog.far) * k;
+      fog.near += (world.fogNear + L * 1.5 - fog.near) * k;
+      fog.far += (world.fogFar + L * 6 - fog.far) * k;
     }
 
     if (amb.current) {
-      amb.current.intensity += ((light ? 1.5 : 0.42) - amb.current.intensity) * k;
+      amb.current.intensity += (0.42 + L * 1.15 - amb.current.intensity) * k;
     }
   });
 

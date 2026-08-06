@@ -8,6 +8,7 @@ import { Chapter } from "@/components/ui/chapter";
 import { BrandMark } from "@/components/ui/brand-mark";
 import { artFor, wantArt, modelFor } from "@/lib/assets";
 import { OrbitSlot } from "@/components/ui/orbit-slot";
+import { AmbienceLayer } from "@/components/ui/ambience";
 import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
 import { accentFor, modeForBrand } from "@/lib/theme";
@@ -34,6 +35,8 @@ function Icon({ item, n }: { item: IconProduct; n: number }) {
         set({ world: `shoe:${item.shoeId}`, formId: item.shoeId });
       }}
     >
+      <AmbienceLayer world={`shoe:${item.shoeId}`} />
+
       <div className="icon__inner" style={{ ["--accent" as string]: accent }}>
         <div className="icon__lead">
           <div className="icon__index">

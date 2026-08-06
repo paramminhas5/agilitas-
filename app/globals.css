@@ -1024,11 +1024,13 @@ img { display: block; max-width: 100%; height: auto; }
   color: var(--bone);
 }
 
-/* Chrome type has to invert too, or it disappears into the paper. */
+/* Chrome type has to invert too, or it disappears into the paper.
+   Neutral, not blue: routing this through --ice put a blue-grey film over
+   every heading on white, which read as a colour cast rather than as metal. */
 [data-mode="light"] .chrome,
 [data-mode="light"] .sp.chrome .sp__ch,
 [data-mode="light"] .sp.chrome .sp__wd {
-  background: linear-gradient(168deg, #14181B 6%, var(--ice) 52%, #7C8792 98%);
+  background: linear-gradient(170deg, #0B0D0F 4%, #34383B 46%, #6E7176 98%);
 }
 
 
@@ -1073,12 +1075,12 @@ img { display: block; max-width: 100%; height: auto; }
 /* z-index -1, not 0. A fixed, opaque element at z-index 0 paints above the
    in-flow content of its siblings, so at 0 this plane covered every piece of
    plain text on the page — only elements with their own layer survived. */
+/* No transition: the colour is recomputed every frame from viewport coverage,
+   so it is already continuous. A CSS transition on top would only lag it. */
 .backdrop {
   position: fixed; inset: 0; z-index: -1; pointer-events: none;
-  background: #050608;
-  transition: background-color 0.75s var(--ease);
+  background-color: #050608;
 }
-.backdrop.is-light { background: #F4F2ED; }
 
 /* Guard: layout containers carry their own layer so no fixed plane can ever
    paint over their contents again. */
@@ -1235,19 +1237,27 @@ img { display: block; max-width: 100%; height: auto; }
    A wash and a horizon per section, keyed off that shoe's accent. Fog and
    lighting alone were too subtle to make each world read as a place.
    ═════════════════════════════════════════════════════════════════════════ */
+/* A wash only, kept to the object side of the frame. The horizon line that
+   used to sit here was removed: it cut every page in half instead of
+   suggesting ground. */
 .berth, .icon { position: relative; overflow: hidden; }
 .berth::before, .icon::before {
   content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
-  background:
-    radial-gradient(80% 55% at 76% 34%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 72%),
-    linear-gradient(to bottom, transparent 58%, color-mix(in srgb, var(--accent) 7%, transparent));
+  background: radial-gradient(
+    62% 50% at 82% 40%,
+    color-mix(in srgb, var(--accent) 13%, transparent),
+    transparent 74%
+  );
 }
-/* The horizon: a single line that tells you the object is standing on
-   something, which is most of what makes a world feel like a place. */
-.berth::after, .icon::after {
-  content: ''; position: absolute; left: 0; right: 0; bottom: 26%;
-  height: 1px; pointer-events: none; z-index: 0;
-  background: linear-gradient(90deg, transparent, var(--hair-2) 22%, var(--hair-2) 78%, transparent);
+/* On paper an accent wash becomes a colour cast over the copy, so it is
+   weaker and pushed further off the text. */
+[data-mode="light"] .berth::before,
+[data-mode="light"] .icon::before {
+  background: radial-gradient(
+    52% 44% at 88% 42%,
+    color-mix(in srgb, var(--accent) 6%, transparent),
+    transparent 76%
+  );
 }
 .berth__inner, .icon__inner { position: relative; z-index: 2; }
 
@@ -1306,8 +1316,7 @@ img { display: block; max-width: 100%; height: auto; }
   .icon__stage, .berth__void { max-width: 76%; margin-inline: auto; }
   .hero__stage { max-width: 62%; }
 
-  /* Horizon reads wrong on a tall narrow panel. */
-  .berth::after, .icon::after { display: none; }
+
 
   /* Grids collapse. */
   .creed__foot, .bridge__grid, .strip, .deck { grid-template-columns: 1fr; }
@@ -1496,3 +1505,119 @@ html.has-cur .orbit.is-held { cursor: grabbing; }
   .case__col { padding: 1.2rem 0 1.4rem; }
   .case__k::after { display: none; }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AMBIENCE
+   ---------------------------------------------------------------------------
+   Behind the copy, never over it. All four are composited transforms and
+   opacity only, so they cost effectively nothing, and the global
+   prefers-reduced-motion rule stops them dead.
+   ═══════════════════════════════════════════════════════════════════════════ */
+.amb {
+  position: absolute; inset: 0; z-index: 1;
+  pointer-events: none; overflow: hidden;
+}
+.amb > span { position: absolute; display: block; will-change: transform, opacity; }
+
+/* ── Floodlight sweep: a pool of light crossing a night pitch ───────────── */
+.amb--sweep > span:first-child {
+  top: -30%; left: -40%; width: 55%; height: 160%;
+  background: radial-gradient(closest-side, rgba(220,230,255,0.13), transparent 72%);
+  transform: rotate(9deg);
+  animation: sweepAcross 17s ease-in-out infinite;
+}
+.amb--sweep > span:nth-child(2) {
+  top: -20%; left: -30%; width: 34%; height: 140%;
+  background: radial-gradient(closest-side, rgba(138,124,255,0.1), transparent 70%);
+  transform: rotate(-7deg);
+  animation: sweepAcross 23s ease-in-out infinite reverse;
+}
+.amb--sweep > span:last-child { display: none; }
+@keyframes sweepAcross {
+  0%   { transform: translateX(0) rotate(9deg); opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { transform: translateX(260%) rotate(9deg); opacity: 0; }
+}
+
+
+/* ── Heat shimmer: hot cement and matting at midday ────────────────────── */
+.amb--shimmer > span:first-child {
+  left: 0; right: 0; bottom: 0; height: 46%;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0 7px,
+    color-mix(in srgb, var(--accent, #fff) 7%, transparent) 7px 8px
+  );
+  animation: shimmerRise 9s linear infinite;
+  opacity: 0.5;
+}
+.amb--shimmer > span:nth-child(2) {
+  left: 0; right: 0; bottom: 0; height: 30%;
+  background: linear-gradient(to top, color-mix(in srgb, var(--accent, #fff) 9%, transparent), transparent);
+  animation: shimmerBreathe 6.5s ease-in-out infinite;
+}
+.amb--shimmer > span:last-child { display: none; }
+@keyframes shimmerRise {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-8px); }
+}
+@keyframes shimmerBreathe {
+  0%, 100% { opacity: 0.5; transform: scaleY(1); }
+  50%      { opacity: 0.85; transform: scaleY(1.08); }
+}
+
+/* ── Sodium: warm street pools with a faint mains flicker ───────────────── */
+.amb--sodium > span {
+  width: 42%; height: 42%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(240,205,140,0.13), transparent 70%);
+}
+.amb--sodium > span:first-child  { top: 46%; left: 6%;  animation: sodiumFlicker 5.5s ease-in-out infinite; }
+.amb--sodium > span:nth-child(2) { top: 12%; left: 38%; animation: sodiumFlicker 7.2s ease-in-out infinite 0.6s;
+  background: radial-gradient(closest-side, rgba(180,220,210,0.1), transparent 70%); }
+.amb--sodium > span:last-child   { top: 52%; left: 66%; animation: sodiumFlicker 6.3s ease-in-out infinite 1.4s; }
+@keyframes sodiumFlicker {
+  0%, 100% { opacity: 0.75; }
+  42%      { opacity: 1; }
+  46%      { opacity: 0.62; }
+  50%      { opacity: 0.95; }
+}
+
+
+/* ── Shaft: one hard side light, and the dust standing in it ────────────── */
+.amb--shaft > span:first-child {
+  top: -25%; right: 4%; width: 30%; height: 150%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 240, 214, 0.11) 42%,
+    rgba(255, 240, 214, 0.05) 58%,
+    transparent 100%
+  );
+  transform: rotate(13deg);
+  animation: shaftBreathe 12s ease-in-out infinite;
+}
+.amb--shaft > span:nth-child(2) {
+  top: 8%; right: 10%; width: 20%; height: 80%;
+  background:
+    radial-gradient(1.4px 1.4px at 20% 12%, rgba(255,245,225,0.5), transparent),
+    radial-gradient(1.2px 1.2px at 62% 34%, rgba(255,245,225,0.42), transparent),
+    radial-gradient(1.6px 1.6px at 38% 58%, rgba(255,245,225,0.38), transparent),
+    radial-gradient(1.2px 1.2px at 76% 76%, rgba(255,245,225,0.44), transparent),
+    radial-gradient(1.4px 1.4px at 12% 88%, rgba(255,245,225,0.34), transparent);
+  animation: motesDrift 21s linear infinite;
+}
+.amb--shaft > span:last-child { display: none; }
+@keyframes shaftBreathe {
+  0%, 100% { opacity: 0.7; }
+  50%      { opacity: 1; }
+}
+@keyframes motesDrift {
+  from { transform: translate3d(0, 6%, 0); }
+  to   { transform: translate3d(-4%, -10%, 0); }
+}
+
+/* On paper these are lights on a lit surface, so they have to come down hard. */
+[data-mode="light"] .amb { opacity: 0.42; mix-blend-mode: multiply; }
+[data-mode="light"] .amb--shaft { mix-blend-mode: normal; opacity: 0.3; }

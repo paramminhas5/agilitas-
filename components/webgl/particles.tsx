@@ -21,6 +21,8 @@ const BEHAVIOUR: Record<Air, {
   grit:  { fall: 0.3,   drift: 0.5,  size: 0.018, alpha: 0.32, tint: "#D2CFC6" },
 };
 
+const AIR_LIGHT = new THREE.Color("#63625B");
+
 export function Particles({ count }: { count: number }) {
   const pts = useRef<THREE.Points>(null);
   const size = useRef(0.02);
@@ -81,11 +83,11 @@ export function Particles({ count }: { count: number }) {
     attr.needsUpdate = true;
 
     // Ease the look so a world change is a shift in weather, not a cut.
-    // Pale particulate vanishes on paper, so in light mode the air darkens.
-    const light = raw.mode === "light";
+    // Pale particulate vanishes on paper, so the air darkens as the page does.
+    const L = raw.light;
     size.current += (b.size - size.current) * k;
-    alpha.current += ((light ? b.alpha * 0.72 : b.alpha) - alpha.current) * k;
-    goal.current.set(light ? "#6B6A63" : b.tint);
+    alpha.current += (b.alpha * (1 - L * 0.28) - alpha.current) * k;
+    goal.current.set(b.tint).lerp(AIR_LIGHT, L);
     tint.current.lerp(goal.current, k);
 
     const mat = p.material as THREE.PointsMaterial;

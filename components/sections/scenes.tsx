@@ -6,6 +6,7 @@ import { Split } from "@/components/ui/split";
 import { Chapter } from "@/components/ui/chapter";
 import { BrandMark } from "@/components/ui/brand-mark";
 import { AssetFilm } from "@/components/ui/asset";
+import { AmbienceLayer } from "@/components/ui/ambience";
 import { posterFor, filmFor, wantFilm } from "@/lib/assets";
 import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
@@ -83,6 +84,7 @@ function Case({ c, n, total }: { c: Campaign; n: number; total: number }) {
       }}
     >
       <div className="case__wash" style={WASH[c.id] ?? {}} />
+      <AmbienceLayer world={`camp:${c.id}`} />
 
       <div className="wrap case__inner">
         <div className="case__head">

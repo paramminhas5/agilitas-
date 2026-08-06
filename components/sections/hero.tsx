@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { Split } from "@/components/ui/split";
+import { OrbitSlot } from "@/components/ui/orbit-slot";
 import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
 
@@ -17,8 +18,10 @@ export function Hero() {
       ([e]) => {
         set({ shattered: e.intersectionRatio < 0.62 });
         if (e.intersectionRatio > 0.5) {
+          // The flagship opens the site: this is the real Kohli 1s model,
+          // not a stand-in.
           claimStage(slot.current);
-          set({ world: "hero", formId: "alleys" });
+          set({ world: "shoe:reverse", formId: "reverse" });
         }
       },
       { threshold: [0, 0.3, 0.62, 0.9, 1] }
@@ -62,8 +65,10 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Reserved box for the 3D object */}
-      <div className="slot hero__stage" ref={slot} aria-hidden />
+      {/* The flagship, in the flesh. Draggable. */}
+      <div className="hero__stage" ref={slot}>
+        <OrbitSlot label="Drag to turn" />
+      </div>
 
       <div className="hero__hint">
         <span className="hero__hint-line" />

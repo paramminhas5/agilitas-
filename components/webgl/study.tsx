@@ -121,7 +121,10 @@ export function Study({ tier }: { tier: Tier }) {
        genuinely explanatory. In the icon section, the berths and the campaign
        scenes, photography is the hero — a stand-in sitting inside a labelled
        frame is worse than the frame alone. */
-    const wanted = raw.phase === "hero" || raw.phase === "brands" || raw.phase === "lab";
+    /* The lab only. The hero now carries a real product, and the two axis
+       sections — engineered by surface, engineered by day — are argument
+       rather than product, so an abstract object there was just clutter. */
+    const wanted = raw.phase === "lab";
     presence.current += ((wanted ? 1 : 0) - presence.current) * Math.min(1, dt * 2.6);
     g.visible = presence.current > 0.02;
 

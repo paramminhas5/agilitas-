@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
-import { set, useSceneValue } from "@/lib/store";
+import { raw, set } from "@/lib/store";
 import type { Mode } from "@/lib/theme";
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -52,14 +52,59 @@ export function Chapter({
   }, [mode, threshold]);
 
   return (
-    <section ref={ref} id={id} className={className} data-mode={mode} style={style}>
+    <section
+      ref={ref}
+      id={id}
+      className={className}
+      data-mode={mode}
+      data-surface={mode}
+      style={style}
+    >
       {children}
     </section>
   );
 }
 
-/** The single fixed plane the whole page sits on. */
+const DARK = [5, 6, 8];
+const LIGHT = [244, 242, 237];
+
+/**
+ * The single plane the whole page sits on. Its colour is not switched — it is
+ * measured, every frame, from how much of the viewport each surface currently
+ * occupies. Crossing from Lotto to one8 is therefore a gradual wash with no
+ * event and no line anywhere on the page.
+ */
 export function Backdrop() {
-  const mode = useSceneValue((s) => s.mode);
-  return <div className={`backdrop ${mode === "light" ? "is-light" : ""}`} aria-hidden />;
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let frame = 0;
+    let shown = -1;
+
+    const read = () => {
+      const vh = window.innerHeight || 1;
+      let lit = 0;
+      document.querySelectorAll<HTMLElement>("[data-surface]").forEach((s) => {
+        const r = s.getBoundingClientRect();
+        const vis = Math.min(vh, r.bottom) - Math.max(0, r.top);
+        if (vis > 0 && s.dataset.surface === "light") lit += vis;
+      });
+      const f = Math.min(1, Math.max(0, lit / vh));
+      raw.light = f;
+
+      if (Math.abs(f - shown) > 0.004) {
+        shown = f;
+        const c = DARK.map((d, i) => Math.round(d + (LIGHT[i] - d) * f));
+        el.style.backgroundColor = `rgb(${c[0]},${c[1]},${c[2]})`;
+      }
+      frame = requestAnimationFrame(read);
+    };
+
+    frame = requestAnimationFrame(read);
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  return <div className="backdrop" ref={ref} aria-hidden />;
 }

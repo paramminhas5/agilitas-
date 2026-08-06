@@ -40,6 +40,10 @@ export type SceneState = {
   dragX: number;
   dragY: number;
   dragging: boolean;
+  /** 0 = fully dark surface, 1 = fully light. Continuous, measured from how
+   *  much of the viewport each surface occupies, so the page washes between
+   *  black and white instead of flipping at a threshold. */
+  light: number;
 };
 
 const state: SceneState = {
@@ -58,6 +62,7 @@ const state: SceneState = {
   dragX: 0,
   dragY: 0,
   dragging: false,
+  light: 0,
 };
 
 /**

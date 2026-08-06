@@ -18,6 +18,8 @@ import { resolveWorld } from "@/lib/worlds";
 
 type Drop = { x: number; y: number; z: number; speed: number; len: number };
 
+const RAIN_LIGHT = new THREE.Color("#54707F");
+
 export function Rain({ count }: { count: number }) {
   const inst = useRef<THREE.InstancedMesh>(null);
   const on = useRef(0);
@@ -51,10 +53,9 @@ export function Rain({ count }: { count: number }) {
     on.current += ((wet ? 1 : 0) - on.current) * Math.min(1, dt * 2.4);
 
     const mat = im.material as THREE.MeshBasicMaterial;
-    const light = raw.mode === "light";
-    // Bright streaks disappear against paper; darken and firm them up.
-    mat.color.set(light ? "#5E7686" : "#D8EEFA");
-    mat.opacity = on.current * (light ? 0.42 : 0.5);
+    // Bright streaks disappear against paper; darken as the page lightens.
+    mat.color.set("#D8EEFA").lerp(RAIN_LIGHT, raw.light);
+    mat.opacity = on.current * (0.5 - raw.light * 0.09);
     im.visible = on.current > 0.02;
     if (!im.visible) return;
 

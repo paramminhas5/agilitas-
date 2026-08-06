@@ -5,6 +5,8 @@ import { campaigns, shoes, type Campaign } from "@/data/products";
 import { Split } from "@/components/ui/split";
 import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
+import { AssetFilm } from "@/components/ui/asset";
+import { posterFor, filmFor, wantFilm } from "@/lib/assets";
 
 /** Each campaign gets its own light. Cold palette throughout. */
 const WASH: Record<string, CSSProperties> = {
@@ -117,6 +119,21 @@ function Scene({ c, n }: { c: Campaign; n: number }) {
           </h3>
           <p className="scene__line">{c.tagline}</p>
           <p className="body-lg scene__body rise rise-d1">{c.description}</p>
+
+          {/* The treatment itself. Silent loop; falls back to a poster, then
+              to a labelled frame stating exactly what to drop in. */}
+          <div className="scene__film rise rise-d2">
+            <AssetFilm
+              src={filmFor(c.id)}
+              poster={posterFor(c.id)}
+              want={wantFilm(c.id)}
+              alt={`${c.name} — treatment film`}
+              ratio="16 / 9"
+            />
+            <div className="scene__film-cap">
+              Treatment — {c.name.toLowerCase()}
+            </div>
+          </div>
         </div>
 
         <div className="dossier rise rise-d2">

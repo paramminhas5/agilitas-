@@ -5,12 +5,14 @@ import { shoes, technologies, type Shoe } from "@/data/products";
 import { Split } from "@/components/ui/split";
 import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
-import { hasArt, hasModel, artPath } from "@/lib/assets";
+import { artFor, wantArt } from "@/lib/assets";
+import { AssetImage } from "@/components/ui/asset";
 
 function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: number) => void }) {
   const ref = useRef<HTMLElement>(null);
   const slot = useRef<HTMLDivElement>(null);
   const techs = technologies.filter((t) => shoe.technologies.includes(t.id));
+  const art = artFor(shoe.id);
 
   useEffect(() => {
     const el = ref.current;
@@ -19,18 +21,17 @@ function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: numbe
       ([e]) => {
         if (!e.isIntersecting) return;
         onEnter(i);
-        // Hand the object this berth's reserved box, its silhouette and its world.
-        claimStage(slot.current);
+        // Hand the object this berth's reserved box, its silhouette and its
+        // world — unless real art has landed, in which case the photograph
+        // is the hero and the object steps aside.
+        claimStage(art ? null : slot.current);
         set({ world: `shoe:${shoe.id}`, formId: shoe.id });
       },
       { threshold: 0.5 }
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [i, onEnter, shoe.id]);
-
-  const art = hasArt(shoe.id);
-  const model = hasModel(shoe.id);
+  }, [i, onEnter, shoe.id, art]);
 
   return (
     <section
@@ -100,15 +101,13 @@ function Berth({ shoe, i, onEnter }: { shoe: Shoe; i: number; onEnter: (i: numbe
         {/* Reserved column. The 3D object is projected into this exact box,
             so it can never overlap the copy. Real art replaces it. */}
         <div className="berth__void slot" ref={slot}>
-          {art ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img src={artPath(shoe.id)} alt={`${shoe.name} — ${shoe.subtitle}`} />
-          ) : !model ? (
-            <div className="holder rise">
-              <div className="holder__corner" />
-              <div className="holder__meta">{shoe.id}.png</div>
-            </div>
-          ) : null}
+          <AssetImage
+            src={art}
+            want={wantArt(shoe.id)}
+            alt={`${shoe.name} — ${shoe.subtitle}`}
+            ratio="1"
+            note={`${shoe.name} · product art`}
+          />
         </div>
       </div>
     </section>

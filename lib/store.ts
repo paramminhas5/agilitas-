@@ -7,7 +7,7 @@ import { useSyncExternalStore } from "react";
    prop drilling or a heavy state library. Mutations are frame-cheap.
    ═══════════════════════════════════════════════════════════════════════════ */
 
-export type Phase = "hero" | "brands" | "lab" | "journey" | "scenes" | "foot";
+export type Phase = "hero" | "icons" | "brands" | "lab" | "journey" | "scenes" | "foot";
 
 export type SceneState = {
   /** 0..1 progress through the whole document */

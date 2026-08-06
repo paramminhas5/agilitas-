@@ -1,27 +1,26 @@
 # 3D models
 
-Drop `.glb` files here named after the shoe id, then flip that id to `true` in
-`lib/assets.ts` → `HAS_MODEL`.
+**Drop a file in. That's the whole process.** No code to edit.
 
 ```
 /public/models/alleys.glb
-/public/models/traktor.glb
-...
 ```
 
-**Export guidance**
+Until a model exists, the scene renders a parametric stand-in built from that
+shoe's real proportions — a slide, a mid-cut trail boot, a studded cricket
+shoe and a climbing slipper are already visibly different objects. Your model
+replaces the stand-in for that shoe only; the rest keep working.
 
 | Setting | Value |
 |---|---|
 | Format | glTF binary (`.glb`) |
 | Up axis | Y-up |
-| Scale | roughly 1 unit toe-to-heel |
+| Length | roughly 1 unit toe-to-heel |
 | Origin | centred on the shoe |
-| Materials | PBR; the accent colour is driven from code, so keep base colour neutral |
+| Materials | PBR, neutral base colour — the accent is driven from code |
 | Budget | under 120k triangles, textures ≤ 2k |
 
-Until a model exists, the scene renders a procedural extruded sole form in its
-place. Nothing breaks if this folder stays empty.
+**Shoe ids**
 
-Shoe ids: `alleys`, `traktor`, `doorway`, `nightshift`, `beta`, `session`,
-`reverse`, `train`, `recover`, `everyday-mid`, `1973`
+`alleys` · `traktor` · `doorway` · `nightshift` · `beta` · `session` ·
+`reverse` · `train` · `recover` · `everyday-mid` · `1973`

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 
 import { Cursor, RevealScope } from "@/components/ui/cursor";
 import { Hero } from "@/components/sections/hero";
+import { Icons } from "@/components/sections/icons";
 import { Brands } from "@/components/sections/brands";
 import { Lab } from "@/components/sections/lab";
 import { Journey } from "@/components/sections/journey";
@@ -20,6 +21,7 @@ import { useSceneValue } from "@/lib/store";
 const Stage = dynamic(() => import("@/components/webgl/stage"), { ssr: false });
 
 const NAV = [
+  { id: "icons", label: "The Icons" },
   { id: "lab", label: "Technology" },
   { id: "journey", label: "The Eleven" },
   { id: "scenes", label: "Campaigns" },
@@ -45,6 +47,7 @@ export function Experience() {
   useEffect(() => {
     const map: [string, Parameters<typeof markPhase>[1]][] = [
       ["hero", "hero"],
+      ["icons", "icons"],
       ["brands", "brands"],
       ["lab", "lab"],
       ["journey", "journey"],
@@ -96,6 +99,7 @@ export function Experience() {
 
       <main>
         <Hero />
+        <Icons />
         <div className="hair" />
         <Brands />
         <div className="hair" />

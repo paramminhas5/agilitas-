@@ -107,7 +107,7 @@ function Scene({ c, n }: { c: Campaign; n: number }) {
     <section className="scene vent" id={`camp-${c.id}`} ref={ref}>
       <div className="scene__wash" style={WASH[c.id] ?? {}} />
       <div className="scene__inner">
-        <div>
+        <div className="scene__left">
           <div className="scene__no">
             Campaign {String(n).padStart(2, "0")} / {campaigns.length}
           </div>

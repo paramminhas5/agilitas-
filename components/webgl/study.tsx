@@ -111,7 +111,10 @@ export function Study({ tier }: { tier: Tier }) {
        world: a night turf pitch is nervous, an archive is nearly still. */
     const spin = world.spin;
     g.rotation.y = t * 0.14 * spin + raw.progress * Math.PI * 0.5;
-    g.rotation.x = 0.5 + Math.sin(t * 0.22 * spin) * 0.05;
+    // Tipped toward the viewer so the tread is actually facing us. Angled the
+    // other way, the whole point of the study — this shoe's own tread — was
+    // hidden on the underside.
+    g.rotation.x = -0.52 + Math.sin(t * 0.22 * spin) * 0.05;
     g.rotation.z = Math.sin(t * 0.17 * spin) * 0.05;
     g.position.y = Math.sin(t * 0.45 * spin) * 0.03;
 

@@ -71,9 +71,10 @@ export function Shards({ tier, count }: { tier: Tier; count: number }) {
     broke.current += (want - broke.current) * Math.min(1, dt * 1.9);
     const b = broke.current;
 
-    // Alive through the hero, dying across the icons, gone after that.
-    const target = raw.phase === "hero" ? 1 : raw.phase === "icons" ? 0.35 : 0;
-    life.current += (target - life.current) * Math.min(1, dt * 1.4);
+    // The hero only. At 35% through the icons they were still legible as grey
+    // triangles scattered over the copy, which is exactly the problem.
+    const target = raw.phase === "hero" ? 1 : 0;
+    life.current += (target - life.current) * Math.min(1, dt * 2.2);
     const alive = life.current;
 
     if (shell.current) {

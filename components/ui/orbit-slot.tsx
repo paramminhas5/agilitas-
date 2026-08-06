@@ -87,8 +87,26 @@ export function OrbitSlot({
     };
   }, []);
 
+  const key = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const step = event.shiftKey ? 0.34 : 0.16;
+    if (event.key === "ArrowLeft") raw.dragX -= step;
+    else if (event.key === "ArrowRight") raw.dragX += step;
+    else if (event.key === "ArrowUp") raw.dragY = Math.max(-0.7, raw.dragY - step);
+    else if (event.key === "ArrowDown") raw.dragY = Math.min(0.8, raw.dragY + step);
+    else return;
+    event.preventDefault();
+  };
+
   return (
-    <div className={`orbit ${className}`} ref={ref} data-cur="Drag">
+    <div
+      className={`orbit ${className}`}
+      ref={ref}
+      data-cur="Drag"
+      role="group"
+      tabIndex={0}
+      aria-label={`${label}. Use arrow keys to rotate.`}
+      onKeyDown={key}
+    >
       <span className="orbit__hint">{label}</span>
     </div>
   );

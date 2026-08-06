@@ -36,97 +36,6 @@ const featuredCampaigns = FEATURED_CAMPAIGNS.map((id) =>
 
 const shoeById = (id: string) => shoes.find((shoe) => shoe.id === id);
 
-function playImpact() {
-  const AudioCtor =
-    window.AudioContext ??
-    (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!AudioCtor) return;
-
-  const context = new AudioCtor();
-  const now = context.currentTime;
-  const master = context.createGain();
-  master.gain.setValueAtTime(0.0001, now);
-  master.gain.exponentialRampToValueAtTime(0.22, now + 0.025);
-  master.gain.exponentialRampToValueAtTime(0.0001, now + 1.7);
-  master.connect(context.destination);
-
-  const low = context.createOscillator();
-  low.type = "sine";
-  low.frequency.setValueAtTime(82, now);
-  low.frequency.exponentialRampToValueAtTime(34, now + 1.2);
-  low.connect(master);
-  low.start(now);
-  low.stop(now + 1.7);
-
-  const air = context.createBufferSource();
-  const buffer = context.createBuffer(1, context.sampleRate * 1.25, context.sampleRate);
-  const channel = buffer.getChannelData(0);
-  for (let i = 0; i < channel.length; i += 1) {
-    channel[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / channel.length, 2.8);
-  }
-  air.buffer = buffer;
-  const filter = context.createBiquadFilter();
-  filter.type = "lowpass";
-  filter.frequency.setValueAtTime(680, now);
-  filter.frequency.exponentialRampToValueAtTime(90, now + 1.1);
-  const airGain = context.createGain();
-  airGain.gain.setValueAtTime(0.075, now);
-  airGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.2);
-  air.connect(filter).connect(airGain).connect(master);
-  air.start(now);
-  air.stop(now + 1.25);
-
-  window.setTimeout(() => void context.close(), 2200);
-}
-
-export function EntryRitual() {
-  const [entered, setEntered] = useState(false);
-  const [leaving, setLeaving] = useState(false);
-
-  const enter = (sound: boolean) => {
-    if (sound) playImpact();
-    setLeaving(true);
-    window.setTimeout(() => setEntered(true), 900);
-  };
-
-  if (entered) return null;
-
-  return (
-    <div className={`entry ${leaving ? "is-leaving" : ""}`} role="dialog" aria-modal="true" aria-label="Enter the Ground Motion experience">
-      <div className="entry__terrain" aria-hidden>
-        <span />
-        <span />
-        <span />
-      </div>
-      <div className="entry__top">
-        <span>Agilitas Sports</span>
-        <span>Portfolio / 01</span>
-      </div>
-      <div className="entry__center">
-        <p className="entry__eyebrow">A product system born underfoot</p>
-        <h1 className="entry__title">
-          <span>Ground</span>
-          <em>/</em>
-          <span>Motion</span>
-        </h1>
-        <p className="entry__copy">Eleven shoes. Two brands. One country moving differently.</p>
-        <div className="entry__actions">
-          <button data-cur="Enter" onClick={() => enter(true)}>
-            Enter with sound
-          </button>
-          <button data-cur="Enter" onClick={() => enter(false)}>
-            Continue silently
-          </button>
-        </div>
-      </div>
-      <div className="entry__base">
-        <span>Designed for this ground</span>
-        <span>Scroll-led experience</span>
-      </div>
-    </div>
-  );
-}
-
 function SectionLabel({ n, children }: { n: string; children: React.ReactNode }) {
   return (
     <div className="gm-label rise">
@@ -174,6 +83,11 @@ function Origin() {
         </div>
       </div>
 
+      <button className="gm-scroll-cue" onClick={() => goTo("ground-story")} data-cur="Scroll">
+        <span className="gm-scroll-cue__label">Scroll to begin</span>
+        <span className="gm-scroll-cue__track"><i /></span>
+      </button>
+
       <div className="gm-groundline" aria-hidden>
         <span className="gm-groundline__runner" />
         {['Cement', 'Matting', 'Turf', 'Rain', 'Home'].map((ground, index) => (
@@ -183,7 +97,7 @@ function Origin() {
         ))}
       </div>
 
-      <div className="gm-manifesto">
+      <div className="gm-manifesto" id="ground-story">
         <p className="gm-manifesto__line rise">We did not begin with a shoe.</p>
         <p className="gm-manifesto__line gm-manifesto__line--shift rise">We began with the ground.</p>
         <p className="gm-manifesto__answer rise">Then built the movement it demanded.</p>
@@ -269,13 +183,54 @@ function BrandSystem() {
           />
         </div>
 
-        <div className="gm-system__bridge">
-          <span className="gm-system__bridge-dot" />
-          <p>Learn with Lotto.</p>
-          <span className="gm-system__bridge-line" />
-          <p className="gm-serif">Get better with one8.</p>
-          <span className="gm-system__bridge-dot gm-system__bridge-dot--end" />
-        </div>
+        <section className="gm-system__bridge" aria-label="The progression from Lotto to one8">
+          <div className="gm-bridge__header">
+            <span>THE PROGRESSION / ONE CONTINUOUS SYSTEM</span>
+            <p>Participation is the beginning. Progress is what keeps people moving.</p>
+          </div>
+
+          <div className="gm-bridge__path">
+            <article className="gm-bridge-card gm-bridge-card--lotto" data-mode="light">
+              <div className="gm-bridge-card__top">
+                <span>01 / ENTER THE GAME</span>
+                <BrandMark brand="LOTTO" mode="light" size={28} />
+              </div>
+              <strong className="gm-bridge-card__verb">LEARN</strong>
+              <h3>with Lotto.</h3>
+              <p>Start anywhere. Play on the surface you already have. Build confidence through access, repetition and joy.</p>
+              <div className="gm-bridge-card__proof">
+                <span><b>08</b> surface-led shoes</span>
+                <span><b>01</b> open door to play</span>
+              </div>
+            </article>
+
+            <div className="gm-bridge__connector" aria-hidden>
+              <span>A</span>
+              <i />
+              <strong>PLAY BECOMES PRACTICE</strong>
+              <i />
+              <span>B</span>
+            </div>
+
+            <article className="gm-bridge-card gm-bridge-card--one8" data-mode="dark">
+              <div className="gm-bridge-card__top">
+                <span>02 / BUILD THE DAY</span>
+                <BrandMark brand="ONE8" mode="dark" size={28} />
+              </div>
+              <strong className="gm-bridge-card__verb">PROGRESS</strong>
+              <h3>with one8.</h3>
+              <p>Train with intent. Recover properly. Return stronger. Turn daily movement into a visible path forward.</p>
+              <div className="gm-bridge-card__proof">
+                <span><b>03</b> progression-led shoes</span>
+                <span><b>04</b> connected day states</span>
+              </div>
+            </article>
+          </div>
+
+          <p className="gm-bridge__close">
+            Not two disconnected brands. <strong>One lifetime in motion.</strong>
+          </p>
+        </section>
       </div>
     </Chapter>
   );

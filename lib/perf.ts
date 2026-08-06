@@ -44,7 +44,8 @@ export function useTier(): Tier {
 
 /** Particle / shard budgets per tier. */
 export const budget = (t: Tier) => ({
-  shards: t === "high" ? 34 : t === "low" ? 14 : 0,
-  grit: t === "high" ? 900 : t === "low" ? 260 : 0,
+  shards: t === "high" ? 26 : t === "low" ? 12 : 0,
+  grit: t === "high" ? 700 : t === "low" ? 220 : 0,
+  rain: t === "high" ? 260 : t === "low" ? 90 : 0,
   dpr: t === "high" ? ([1, 1.75] as [number, number]) : ([1, 1.25] as [number, number]),
 });

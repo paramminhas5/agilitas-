@@ -49,6 +49,9 @@ export function Shards({ tier, count }: { tier: Tier; count: number }) {
   const inst = useRef<THREE.InstancedMesh>(null);
   const shards = useMemo(() => seed(count), [count]);
   const broke = useRef(0); // 0..1 how far through the break we are
+  /** Fragments belong to the hero and its exit only. Left running they end up
+   *  orbiting a laboratory, where they read as dust on the screen. */
+  const life = useRef(1);
   const m4 = useMemo(() => new THREE.Matrix4(), []);
   const q = useMemo(() => new THREE.Quaternion(), []);
   const v3 = useMemo(() => new THREE.Vector3(1, 1, 1), []);
@@ -68,9 +71,14 @@ export function Shards({ tier, count }: { tier: Tier; count: number }) {
     broke.current += (want - broke.current) * Math.min(1, dt * 1.9);
     const b = broke.current;
 
+    // Alive through the hero, dying across the icons, gone after that.
+    const target = raw.phase === "hero" ? 1 : raw.phase === "icons" ? 0.35 : 0;
+    life.current += (target - life.current) * Math.min(1, dt * 1.4);
+    const alive = life.current;
+
     if (shell.current) {
-      const mat = shell.current.material as THREE.MeshPhysicalMaterial;
-      mat.opacity = (1 - b) * (tier === "high" ? 0.22 : 0.14);
+      const mat = shell.current.material as THREE.MeshBasicMaterial;
+      mat.opacity = (1 - b) * alive * 0.14;
       shell.current.visible = mat.opacity > 0.004;
       shell.current.scale.setScalar(1 + b * 0.5);
       shell.current.rotation.y = t * 0.1;
@@ -80,6 +88,11 @@ export function Shards({ tier, count }: { tier: Tier; count: number }) {
 
     const im = inst.current;
     if (!im) return;
+
+    const shardMat = im.material as THREE.MeshPhysicalMaterial;
+    shardMat.opacity = alive * 0.42;
+    im.visible = alive > 0.02;
+    if (!im.visible) return;
 
     for (let i = 0; i < shards.length; i++) {
       const s = shards[i];
@@ -113,15 +126,15 @@ export function Shards({ tier, count }: { tier: Tier; count: number }) {
 
   return (
     <group>
+      {/* A thin cage rather than a filled sphere. The solid version read as a
+          grey moon and flattened everything behind it. */}
       <mesh ref={shell} geometry={shellGeo}>
-        <meshPhysicalMaterial
+        <meshBasicMaterial
+          wireframe
           transparent
-          opacity={0.2}
-          roughness={0.06}
-          metalness={0}
+          opacity={0.14}
           color="#CFE6F2"
-          side={THREE.DoubleSide}
-          flatShading
+          depthWrite={false}
         />
       </mesh>
 

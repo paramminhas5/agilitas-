@@ -106,7 +106,10 @@ img { display: block; max-width: 100%; height: auto; }
   position: fixed; top: 0; left: 0; z-index: 950;
   pointer-events: none; will-change: transform;
   mix-blend-mode: difference;
+  opacity: 0; transition: opacity 0.25s var(--ease);
 }
+/* Only appears once the pointer has actually moved. */
+.cur.is-ready { opacity: 1; }
 .cur__dot {
   position: absolute; width: 6px; height: 6px; border-radius: 50%;
   background: var(--bone); transform: translate(-50%, -50%);

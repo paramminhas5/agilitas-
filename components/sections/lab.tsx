@@ -65,7 +65,11 @@ export function Lab() {
   /* The lab owns the object while it is on screen, and the world turns wet
      when the selected platform's whole argument is water. */
   useEffect(() => {
-    set({ tech: sel, world: isWetPlatform(technologies[sel].id) ? "lab:wet" : "lab" });
+    set({
+      tech: sel,
+      mode: "dark",
+      world: isWetPlatform(technologies[sel].id) ? "lab:wet" : "lab",
+    });
   }, [sel]);
 
   /* A macro photograph, once one exists, outranks the 3D stand-in. */
@@ -106,7 +110,7 @@ export function Lab() {
 
 
   return (
-    <section className="vent lab" id="lab">
+    <section className="vent lab" id="lab" data-mode="dark">
       <div className="wrap bay--tight">
         <div className="eyebrow rise">Technology — ten platforms</div>
         <h2 className="h-lg" style={{ maxWidth: "18ch" }}>

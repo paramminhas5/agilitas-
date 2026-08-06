@@ -15,13 +15,21 @@ export function Cursor() {
     const el = ref.current;
     if (!el) return;
 
-    document.documentElement.classList.add("has-cur");
-
     const target = { x: innerWidth / 2, y: innerHeight / 2 };
     const pos = { ...target };
     let frame = 0;
+    let woken = false;
 
     const move = (e: PointerEvent) => {
+      // Until the pointer actually moves we show nothing. Otherwise the ring
+      // parks at viewport centre and sits on top of the headline.
+      if (!woken) {
+        woken = true;
+        pos.x = e.clientX;
+        pos.y = e.clientY;
+        el.classList.add("is-ready");
+        document.documentElement.classList.add("has-cur");
+      }
       target.x = e.clientX;
       target.y = e.clientY;
       const hot = (e.target as Element | null)?.closest?.("[data-cur]") as HTMLElement | null;

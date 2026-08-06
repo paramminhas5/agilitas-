@@ -73,8 +73,8 @@ function Scene({ c, n }: { c: Campaign; n: number }) {
     const io = new IntersectionObserver(
       ([e]) => {
         if (!e.isIntersecting) return;
-        claimStage(slot.current);
-        set({ world: `camp:${c.id}`, formId: formForCampaign(c.shoe) });
+        claimStage(null);
+        set({ world: `camp:${c.id}`, formId: formForCampaign(c.shoe), mode: "dark" });
       },
       { threshold: 0.5 }
     );
@@ -104,10 +104,10 @@ function Scene({ c, n }: { c: Campaign; n: number }) {
   }, []);
 
   return (
-    <section className="scene vent" id={`camp-${c.id}`} ref={ref}>
+    <section className="scene vent" id={`camp-${c.id}`} ref={ref} data-mode="dark">
       <div className="scene__wash" style={WASH[c.id] ?? {}} />
       <div className="scene__inner">
-        <div>
+        <div className="scene__left">
           <div className="scene__no">
             Campaign {String(n).padStart(2, "0")} / {campaigns.length}
           </div>
@@ -157,7 +157,7 @@ function Scene({ c, n }: { c: Campaign; n: number }) {
 
 export function Scenes() {
   return (
-    <div id="scenes">
+    <div id="scenes" data-mode="dark">
       <div className="wrap bay--tight">
         <div className="eyebrow rise">Campaigns — ten activations</div>
         <h2 className="h-lg" style={{ maxWidth: "16ch" }}>

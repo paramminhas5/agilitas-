@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { raw, stage as stageSlot } from "@/lib/store";
+import { raw, stage as stageSlot, useSceneValue } from "@/lib/store";
 import { resolveWorld } from "@/lib/worlds";
 import { budget, type Tier } from "@/lib/perf";
-import { Shoe } from "./shoe";
+import { Study } from "./study";
 import { Shards } from "./shards";
 import { Particles } from "./particles";
+import { Rain } from "./rain";
 import { Ground } from "./ground";
 
 /** Fallback placement for regions that reserve no box of their own. */
@@ -19,8 +20,35 @@ const DRIFT: Record<string, [number, number]> = {
 
 function Rig({ tier, shards }: { tier: Tier; shards: number }) {
   const holder = useRef<THREE.Group>(null);
+  const content = useRef<THREE.Group>(null);
   const key = useRef<THREE.PointLight>(null);
   const fill = useRef<THREE.PointLight>(null);
+  const amb = useRef<THREE.AmbientLight>(null);
+  const formId = useSceneValue((s) => s.formId);
+
+  /* The object's true size, measured rather than assumed. A bounding sphere,
+     not a width: the object rotates, so only a radius guarantees it stays
+     inside its slot at every angle. Assuming a fixed length is what let it
+     bleed off the right edge of the page. */
+  const radius = useRef(1.5);
+  useEffect(() => {
+    let raf = 0;
+    const measure = () => {
+      const h = holder.current;
+      const c = content.current;
+      if (!h || !c) return;
+      const keep = h.scale.clone();
+      h.scale.set(1, 1, 1);
+      h.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(c);
+      const sphere = box.getBoundingSphere(new THREE.Sphere());
+      if (sphere.radius > 0.01) radius.current = sphere.radius;
+      h.scale.copy(keep);
+      h.updateMatrixWorld(true);
+    };
+    raf = requestAnimationFrame(measure);
+    return () => cancelAnimationFrame(raf);
+  }, [formId, tier]);
 
   const keyCol = useRef(new THREE.Color("#EDEBE6"));
   const fillCol = useRef(new THREE.Color("#8A7CFF"));
@@ -66,16 +94,22 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
       const travel = -cam.position.z / dir.z; // intersect the z = 0 plane
       want.copy(cam.position).addScaledVector(dir, travel);
 
-      // Fit the object to the width of that box.
+      // Contain the object inside the box, using the measured radius so it
+      // cannot escape at any rotation. 0.86 leaves a little air.
       const visH = 2 * Math.tan((cam.fov * Math.PI) / 360) * cam.position.z;
       const perPx = visH / window.innerHeight;
-      const target = THREE.MathUtils.clamp((r.width * perPx) / 3.05, 0.42, 1.5);
+      const fitPx = Math.min(r.width, r.height);
+      const target = THREE.MathUtils.clamp(
+        (fitPx * perPx * 0.86) / (radius.current * 2),
+        0.3,
+        1.4
+      );
       fitScale.current += (target - fitScale.current) * k;
     } else {
       const d = DRIFT[raw.world] ?? DRIFT[raw.phase] ?? [0.5, -0.1];
       const visH = 2 * Math.tan((cam.fov * Math.PI) / 360) * cam.position.z;
       want.set(d[0] * visH * 0.9, d[1] * visH * 0.5, 0);
-      fitScale.current += (0.72 - fitScale.current) * k;
+      fitScale.current += (0.6 - fitScale.current) * k;
     }
 
     h.position.lerp(want, Math.min(1, dt * 1.9));
@@ -98,19 +132,28 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
       fill.current.intensity += (world.fillIntensity - fill.current.intensity) * k;
     }
 
+    /* In light mode the whole scene inverts: objects have to recede into
+       paper rather than into black, so the fog target becomes the light
+       surface and the ambient lifts to match. */
+    const light = raw.mode === "light";
+
     const fog = st.scene.fog as THREE.Fog | null;
     if (fog) {
-      tmp.current.set(world.fog);
+      tmp.current.set(light ? "#F4F2ED" : world.fog);
       fogCol.current.lerp(tmp.current, k);
       fog.color.copy(fogCol.current);
-      fog.near += (world.fogNear - fog.near) * k;
-      fog.far += (world.fogFar - fog.far) * k;
+      fog.near += ((light ? world.fogNear + 1.5 : world.fogNear) - fog.near) * k;
+      fog.far += ((light ? world.fogFar + 6 : world.fogFar) - fog.far) * k;
+    }
+
+    if (amb.current) {
+      amb.current.intensity += ((light ? 1.5 : 0.42) - amb.current.intensity) * k;
     }
   });
 
   return (
     <>
-      <ambientLight intensity={0.42} />
+      <ambientLight ref={amb} intensity={0.42} />
       <pointLight ref={key} position={[2.6, 2.4, 3.2]} intensity={24} distance={16} decay={2} />
       <pointLight ref={fill} position={[-3.2, -1.4, 2.2]} intensity={10} distance={13} decay={2} />
       <directionalLight position={[-1.5, 3, -2]} intensity={0.4} color="#CFE6F2" />
@@ -118,7 +161,9 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
       <Ground />
 
       <group ref={holder}>
-        <Shoe tier={tier} />
+        <group ref={content}>
+          <Study tier={tier} />
+        </group>
         {shards > 0 && <Shards tier={tier} count={shards} />}
       </group>
     </>
@@ -140,6 +185,7 @@ export default function Stage({ tier }: { tier: Tier }) {
       >
         <Rig tier={tier} shards={b.shards} />
         {b.grit > 0 && <Particles count={b.grit} />}
+        {b.rain > 0 && <Rain count={b.rain} />}
         <fog attach="fog" args={["#050608", 7, 20]} />
       </Canvas>
     </div>

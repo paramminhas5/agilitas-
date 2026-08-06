@@ -14,8 +14,10 @@
 
   /* Ink */
   --bone: #EDEBE6;
-  --dim: rgba(237,235,230,0.52);
-  --muted: rgba(237,235,230,0.24);
+  /* Raised from 0.52: body copy sits over a live 3D scene, and at 52% the
+     rain was visibly falling through the letterforms. */
+  --dim: rgba(237,235,230,0.66);
+  --muted: rgba(237,235,230,0.3);
   --faint: rgba(237,235,230,0.12);
   --hair: rgba(237,235,230,0.07);
   --hair-2: rgba(237,235,230,0.14);
@@ -83,6 +85,8 @@ img { display: block; max-width: 100%; height: auto; }
   position: fixed; inset: 0; z-index: 0;
   pointer-events: none;
 }
+/* The canvas is transparent, so sitting above the backdrop is correct; it must
+   never sit above the copy. */
 .stage canvas { display: block; }
 
 /* Everything DOM sits above the stage */
@@ -106,7 +110,10 @@ img { display: block; max-width: 100%; height: auto; }
   position: fixed; top: 0; left: 0; z-index: 950;
   pointer-events: none; will-change: transform;
   mix-blend-mode: difference;
+  opacity: 0; transition: opacity 0.25s var(--ease);
 }
+/* Only appears once the pointer has actually moved. */
+.cur.is-ready { opacity: 1; }
 .cur__dot {
   position: absolute; width: 6px; height: 6px; border-radius: 50%;
   background: var(--bone); transform: translate(-50%, -50%);
@@ -824,11 +831,18 @@ img { display: block; max-width: 100%; height: auto; }
    cells, two spec cells — with real steps between them.
    ═════════════════════════════════════════════════════════════════════════ */
 .berth__value {
-  margin-top: 1.8rem; max-width: 40ch;
+  margin-top: 1.8rem; max-width: 42ch;
+  padding-left: 1.1rem; border-left: 2px solid var(--accent, var(--signal));
+}
+.berth__value-k {
+  display: block; margin-bottom: 0.4rem;
+  font-family: var(--f-mono); font-size: 0.56rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--accent, var(--signal));
+}
+.berth__value-v {
   font-family: var(--f-display); font-weight: 500;
   font-size: clamp(1.05rem, 1.7vw, 1.45rem); line-height: 1.4;
   letter-spacing: -0.015em; color: var(--bone);
-  padding-left: 1.1rem; border-left: 2px solid var(--accent, var(--signal));
 }
 /* Labels were below the legible floor at 8px. */
 .deck__label, .strip__title { font-size: 0.58rem; letter-spacing: 0.12em; }
@@ -948,4 +962,371 @@ img { display: block; max-width: 100%; height: auto; }
   margin-top: 0.6rem;
   font-family: var(--f-mono); font-size: 0.46rem; letter-spacing: 0.16em;
   text-transform: uppercase; color: var(--muted);
+}
+
+
+/* ═══ COPY SCRIM ═══════════════════════════════════════════════════════════
+   The copy columns sit over a moving scene. A soft, edgeless scrim keeps type
+   legible without introducing a visible panel.
+   ═════════════════════════════════════════════════════════════════════════ */
+.berth__lead::before,
+.icon__lead::before,
+.scene__left::before {
+  content: '';
+  position: absolute;
+  inset: -3rem -8rem -3rem -4rem;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    115% 85% at 22% 50%,
+    rgba(5, 6, 8, 0.94) 0%,
+    rgba(5, 6, 8, 0.8) 44%,
+    rgba(5, 6, 8, 0) 76%
+  );
+}
+.scene__left { position: relative; }
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIGHT MODE — LOTTO
+   ---------------------------------------------------------------------------
+   Lotto is light, one8 is dark. Every component reads its colour from tokens,
+   so a section only has to declare data-mode="light" and it inverts whole.
+   The accents are redefined rather than reused: signal aqua on white is
+   almost invisible, so each is darkened and saturated to hold contrast.
+   ═══════════════════════════════════════════════════════════════════════════ */
+[data-mode="light"] {
+  --void: #F4F2ED;
+  --carbon: #EDEAE3;
+  --graphite: #E4E0D7;
+  --slate: #D6D1C6;
+
+  --bone: #0A0C0E;
+  --dim: rgba(10, 12, 14, 0.74);
+  --muted: rgba(10, 12, 14, 0.46);
+  --faint: rgba(10, 12, 14, 0.18);
+  --hair: rgba(10, 12, 14, 0.11);
+  --hair-2: rgba(10, 12, 14, 0.2);
+
+  --glass: rgba(10, 12, 14, 0.028);
+  --glass-2: rgba(10, 12, 14, 0.055);
+
+  --signal: #0C7A6B;
+  --ion: #4436B8;
+  --ice: #3E5F76;
+  --steel: #55616A;
+  --brass: #7E6E33;
+
+  color: var(--bone);
+}
+
+/* Chrome type has to invert too, or it disappears into the paper. */
+[data-mode="light"] .chrome,
+[data-mode="light"] .sp.chrome .sp__ch,
+[data-mode="light"] .sp.chrome .sp__wd {
+  background: linear-gradient(168deg, #14181B 6%, var(--ice) 52%, #7C8792 98%);
+}
+
+
+/* Surfaces that were "glass over black" need to read as ink on paper. */
+[data-mode="light"] .grain { opacity: 0.035; mix-blend-mode: multiply; }
+[data-mode="light"] .dossier__cell { background: rgba(244, 242, 237, 0.78); }
+
+/* The fixed chrome lives outside any section, so it takes its mode from the
+   shell. Same design in both — it just has to stay legible when the page
+   turns to paper. */
+.shell[data-mode="light"] .nav {
+  background: linear-gradient(to bottom, rgba(244, 242, 237, 0.94), rgba(244, 242, 237, 0));
+}
+.shell[data-mode="light"] .nav__item { color: rgba(10, 12, 14, 0.5); }
+.shell[data-mode="light"] .nav__item:hover,
+.shell[data-mode="light"] .nav__item.is-on { color: #0A0C0E; }
+.shell[data-mode="light"] .nav__mark { color: #0A0C0E; }
+.shell[data-mode="light"] .nav__pdf { color: #0A0C0E; border-color: rgba(10, 12, 14, 0.2); }
+.shell[data-mode="light"] .dock {
+  background: rgba(244, 242, 237, 0.86); color: #0A0C0E;
+  border-color: rgba(10, 12, 14, 0.2);
+}
+.shell[data-mode="light"] .rail { background: rgba(10, 12, 14, 0.1); }
+
+/* The copy scrim is a dark wash; in light mode it must be a pale one. */
+[data-mode="light"] .berth__lead::before,
+[data-mode="light"] .icon__lead::before,
+[data-mode="light"] .scene__left::before {
+  background: radial-gradient(
+    115% 85% at 22% 50%,
+    rgba(244, 242, 237, 0.95) 0%,
+    rgba(244, 242, 237, 0.82) 44%,
+    rgba(244, 242, 237, 0) 76%
+  );
+}
+
+/* ═══ BACKDROP ═════════════════════════════════════════════════════════════
+   A single fixed plane behind the 3D scene. Its colour is the current mode,
+   so the whole page turns over at a brand boundary while the canvas keeps
+   drawing on top of it.
+   ═════════════════════════════════════════════════════════════════════════ */
+/* z-index -1, not 0. A fixed, opaque element at z-index 0 paints above the
+   in-flow content of its siblings, so at 0 this plane covered every piece of
+   plain text on the page — only elements with their own layer survived. */
+.backdrop {
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: #050608;
+  transition: background-color 0.75s var(--ease);
+}
+.backdrop.is-light { background: #F4F2ED; }
+
+/* Guard: layout containers carry their own layer so no fixed plane can ever
+   paint over their contents again. */
+.wrap, .side__inner, .creed, .bridge__inner, .chapmark__inner { position: relative; z-index: 1; }
+
+
+/* ═══ BRAND MARK ═══════════════════════════════════════════════════════════ */
+.mark { display: block; width: auto; }
+.mark--stand {
+  font-family: var(--f-display); font-weight: 900;
+  letter-spacing: -0.03em; line-height: 1;
+  color: var(--bone);
+}
+[data-mode="dark"] .mark { filter: none; }
+
+
+/* ═══ VISION ═══════════════════════════════════════════════════════════════ */
+.creed {
+  min-height: 100svh; display: grid; align-items: center;
+  padding: clamp(6rem, 14vh, 10rem) 0;
+}
+.creed__h {
+  font-family: var(--f-display); font-weight: 900;
+  font-size: clamp(2.4rem, 7vw, 6rem); line-height: 0.92;
+  letter-spacing: -0.045em; margin-top: 1rem;
+}
+.creed__foot {
+  margin-top: clamp(2.5rem, 6vh, 4.5rem);
+  display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 4rem);
+  max-width: 76rem;
+}
+@media(max-width: 820px) { .creed__foot { grid-template-columns: 1fr; } }
+
+/* ═══ THE TWO SIDES ════════════════════════════════════════════════════════ */
+.side {
+  min-height: 100svh; display: grid; align-items: center;
+  padding: clamp(5rem, 12vh, 9rem) 0;
+  border-top: 1px solid var(--hair);
+}
+.side__inner {
+  display: grid; grid-template-columns: 1fr 1.05fr;
+  gap: clamp(2rem, 6vw, 6rem); align-items: center;
+}
+.side__mark { margin-bottom: 1.6rem; }
+.side__who {
+  font-family: var(--f-mono); font-size: 0.56rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;
+}
+.side__axis {
+  font-family: var(--f-display); font-weight: 900;
+  font-size: clamp(2.1rem, 5.6vw, 4.4rem); line-height: 0.94;
+  letter-spacing: -0.04em;
+}
+.side__lede { margin-top: 1.5rem; max-width: 40ch; }
+@media(max-width: 900px) { .side__inner { grid-template-columns: 1fr; } }
+
+
+/* ═══ LEDGER ═══════════════════════════════════════════════════════════════ */
+.side__ledger-k {
+  font-family: var(--f-mono); font-size: 0.52rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--signal); margin-bottom: 1rem;
+}
+.ledger__row {
+  display: grid; grid-template-columns: 2.2rem 9rem 1fr;
+  gap: 0.9rem; align-items: baseline;
+  padding: 0.95rem 0; border-top: 1px solid var(--hair);
+  transition: background 0.35s var(--ease);
+}
+.ledger__row:last-child { border-bottom: 1px solid var(--hair); }
+.ledger__n {
+  font-family: var(--f-mono); font-size: 0.5rem; letter-spacing: 0.14em;
+  color: var(--muted);
+}
+.ledger__k {
+  font-family: var(--f-display); font-weight: 700; font-size: 0.95rem;
+  letter-spacing: -0.01em; color: var(--bone);
+}
+.ledger__v { font-size: 0.84rem; line-height: 1.6; color: var(--dim); }
+@media(max-width: 640px) {
+  .ledger__row { grid-template-columns: 1.8rem 1fr; }
+  .ledger__v { grid-column: 2; }
+}
+
+/* ═══ THE BRIDGE ═══════════════════════════════════════════════════════════ */
+.bridge {
+  min-height: 100svh; display: grid; align-items: center;
+  padding: clamp(5rem, 12vh, 9rem) 0; border-top: 1px solid var(--hair);
+}
+.bridge__h {
+  font-family: var(--f-display); font-weight: 900;
+  font-size: clamp(2rem, 5.4vw, 4.2rem); line-height: 0.96;
+  letter-spacing: -0.04em; margin-top: 0.6rem;
+}
+.bridge__rail {
+  display: flex; align-items: center; gap: 1.2rem;
+  margin: clamp(2rem, 5vh, 3.5rem) 0;
+  max-width: 34rem;
+}
+.bridge__node {
+  display: grid; place-items: center; padding: 0.7rem 1.1rem;
+  border: 1px solid var(--hair-2); border-radius: 2px;
+}
+.bridge__node--lotto { background: #F4F2ED; }
+.bridge__node--lotto .mark--stand { color: #0A0C0E; }
+.bridge__node--one8 { background: transparent; }
+.bridge__line {
+  flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--ice), var(--ion));
+}
+.bridge__grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 4vw, 3.5rem);
+  max-width: 66rem;
+}
+.bridge__cta { margin-top: 2.4rem; }
+@media(max-width: 820px) { .bridge__grid { grid-template-columns: 1fr; } }
+
+
+.icon__mark { margin-bottom: 1rem; }
+
+
+/* ═══ BRAND BREAK ══════════════════════════════════════════════════════════
+   A full-bleed hinge between the two brands, so the eight Lotto shoes and the
+   three one8 shoes can never read as one undifferentiated run.
+   ═════════════════════════════════════════════════════════════════════════ */
+.chapmark {
+  min-height: 62svh; display: grid; align-items: center;
+  border-top: 1px solid var(--hair-2);
+  border-bottom: 1px solid var(--hair-2);
+}
+.chapmark__inner {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 2rem; flex-wrap: wrap;
+}
+.chapmark__meta { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; text-align: right; }
+.chapmark__count {
+  font-family: var(--f-display); font-weight: 900;
+  font-size: clamp(1.6rem, 4vw, 3rem); letter-spacing: -0.035em; line-height: 1;
+}
+.chapmark__axis {
+  font-family: var(--f-mono); font-size: 0.56rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--signal);
+}
+@media(max-width: 640px) {
+  .chapmark__inner { align-items: flex-start; }
+  .chapmark__meta { align-items: flex-start; text-align: left; }
+}
+
+/* one8 ticks read differently in the HUD */
+.hud__tick--one8 .hud__tick-bar { background: var(--ion); }
+.hud__tick--one8.is-on .hud__tick-bar { background: var(--ion); }
+
+
+/* ═══ WORLD WASH ═══════════════════════════════════════════════════════════
+   A wash and a horizon per section, keyed off that shoe's accent. Fog and
+   lighting alone were too subtle to make each world read as a place.
+   ═════════════════════════════════════════════════════════════════════════ */
+.berth, .icon { position: relative; overflow: hidden; }
+.berth::before, .icon::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(80% 55% at 76% 34%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 72%),
+    linear-gradient(to bottom, transparent 58%, color-mix(in srgb, var(--accent) 7%, transparent));
+}
+/* The horizon: a single line that tells you the object is standing on
+   something, which is most of what makes a world feel like a place. */
+.berth::after, .icon::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 26%;
+  height: 1px; pointer-events: none; z-index: 0;
+  background: linear-gradient(90deg, transparent, var(--hair-2) 22%, var(--hair-2) 78%, transparent);
+}
+.berth__inner, .icon__inner { position: relative; z-index: 2; }
+
+/* Fallback for engines without color-mix */
+@supports not (color: color-mix(in srgb, red 50%, blue)) {
+  .berth::before, .icon::before { background: none; }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOBILE
+   ---------------------------------------------------------------------------
+   Not breakpoints bolted on: the type ramp, the navigation model and the
+   section rhythm all change. Most people will meet this on a phone.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@media (max-width: 860px) {
+  :root { --pad: 1.15rem; --nav-h: 52px; }
+
+  /* Navigation becomes a scrollable rail rather than disappearing. */
+  .nav { gap: 0.75rem; }
+  .nav__set {
+    display: flex; overflow-x: auto; scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: 1.15rem; flex: 1; margin: 0 0.4rem;
+    mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+  .nav__set::-webkit-scrollbar { display: none; }
+  .nav__item { font-size: 0.5rem; white-space: nowrap; }
+  .nav__item::after { display: none; }
+  .nav__mark { font-size: 0.7rem; }
+  .nav__pdf { padding: 0.4rem 0.7rem; font-size: 0.46rem; }
+
+  /* Type ramp: the desktop minimums are still too big in a 360px column. */
+  .h-xl { font-size: clamp(2.5rem, 15vw, 4.5rem); letter-spacing: -0.04em; }
+  .h-lg { font-size: clamp(1.7rem, 9vw, 2.6rem); }
+  .h-md { font-size: clamp(1.25rem, 6vw, 1.7rem); }
+  .creed__h { font-size: clamp(1.9rem, 11vw, 3rem); }
+  .side__axis { font-size: clamp(1.7rem, 10vw, 2.6rem); }
+  .bridge__h { font-size: clamp(1.6rem, 9vw, 2.4rem); }
+  .icon__street { font-size: clamp(2.2rem, 14vw, 4rem); }
+  .berth__name { font-size: clamp(2.2rem, 14vw, 4rem); }
+  .scene__name { font-size: clamp(1.8rem, 11vw, 3rem); }
+  .body-lg { font-size: 0.95rem; }
+}
+
+
+@media (max-width: 860px) {
+  /* Full-height sections stop being full height where content is taller. */
+  .hero { min-height: 92svh; padding-bottom: 5rem; }
+  .berth, .icon, .side, .scene, .creed, .bridge { min-height: 0; }
+  .berth, .icon { padding-block: clamp(3.5rem, 9vh, 5rem); }
+  .side, .creed, .bridge { padding-block: clamp(3.5rem, 9vh, 5rem); }
+  .chapmark { min-height: 0; padding-block: 3rem; }
+
+  /* Reserved 3D boxes shrink so copy leads on a phone. */
+  .icon__stage, .berth__void { max-width: 76%; margin-inline: auto; }
+  .hero__stage { max-width: 62%; }
+
+  /* Horizon reads wrong on a tall narrow panel. */
+  .berth::after, .icon::after { display: none; }
+
+  /* Grids collapse. */
+  .creed__foot, .bridge__grid, .strip, .deck { grid-template-columns: 1fr; }
+  .hero__foot { grid-template-columns: 1fr; gap: 1.75rem; }
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .metric { padding: 2rem 1rem; }
+  .foot__grid { grid-template-columns: 1fr 1fr; gap: 1.75rem; }
+
+  /* The lab is a scroll track on desktop; on a phone it is a plain list. */
+  .lab__track { height: auto; }
+  .lab__sticky { position: static; height: auto; }
+  .lab__grid { grid-template-columns: 1fr; }
+  .lab__panel { padding: 1.75rem 0 0; max-height: none; }
+  .lab__media { display: none; }
+  .lab__row { padding-right: 0; }
+
+  /* Dock and cursor. */
+  .dock { right: 0.75rem; bottom: 0.75rem; padding: 0.55rem 0.85rem; }
+  .scene__film { margin-top: 1.5rem; }
+}
+
+/* Very short viewports (landscape phones) should not be pinned. */
+@media (max-height: 560px) {
+  .lab__sticky { position: static; height: auto; }
+  .lab__track { height: auto; }
 }

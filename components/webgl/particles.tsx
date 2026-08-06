@@ -7,16 +7,18 @@ import { raw } from "@/lib/store";
 import { resolveWorld, type Air } from "@/lib/worlds";
 
 /** Per-mode behaviour: fall speed, lateral drift, size, opacity, tint. */
+/* Rain is handled by its own streak layer, so this field stands down for it
+   and only contributes a faint spray. */
 const BEHAVIOUR: Record<Air, {
-  fall: number; drift: number; size: number; alpha: number; tint: string; stretch: number;
+  fall: number; drift: number; size: number; alpha: number; tint: string;
 }> = {
-  none:  { fall: 0,     drift: 0,    size: 0.02, alpha: 0,    tint: "#CBD8E0", stretch: 1 },
-  dust:  { fall: 0.06,  drift: 0.05, size: 0.02, alpha: 0.34, tint: "#CBD8E0", stretch: 1 },
-  rain:  { fall: 3.4,   drift: 0.18, size: 0.03, alpha: 0.58, tint: "#BFE2F2", stretch: 7 },
-  mist:  { fall: 0.14,  drift: 0.1,  size: 0.05, alpha: 0.2,  tint: "#C6D6E4", stretch: 1 },
-  chalk: { fall: -0.18, drift: 0.08, size: 0.03, alpha: 0.3,  tint: "#E8F2EC", stretch: 1 },
-  motes: { fall: 0.02,  drift: 0.02, size: 0.022, alpha: 0.26, tint: "#EADFC8", stretch: 1 },
-  grit:  { fall: 0.3,   drift: 0.5,  size: 0.018, alpha: 0.32, tint: "#D2CFC6", stretch: 2 },
+  none:  { fall: 0,     drift: 0,    size: 0.02,  alpha: 0,    tint: "#CBD8E0" },
+  dust:  { fall: 0.06,  drift: 0.05, size: 0.02,  alpha: 0.34, tint: "#CBD8E0" },
+  rain:  { fall: 1.1,   drift: 0.1,  size: 0.016, alpha: 0.16, tint: "#BFE2F2" },
+  mist:  { fall: 0.14,  drift: 0.1,  size: 0.05,  alpha: 0.2,  tint: "#C6D6E4" },
+  chalk: { fall: -0.18, drift: 0.08, size: 0.03,  alpha: 0.3,  tint: "#E8F2EC" },
+  motes: { fall: 0.02,  drift: 0.02, size: 0.022, alpha: 0.26, tint: "#EADFC8" },
+  grit:  { fall: 0.3,   drift: 0.5,  size: 0.018, alpha: 0.32, tint: "#D2CFC6" },
 };
 
 export function Particles({ count }: { count: number }) {
@@ -79,9 +81,11 @@ export function Particles({ count }: { count: number }) {
     attr.needsUpdate = true;
 
     // Ease the look so a world change is a shift in weather, not a cut.
+    // Pale particulate vanishes on paper, so in light mode the air darkens.
+    const light = raw.mode === "light";
     size.current += (b.size - size.current) * k;
-    alpha.current += (b.alpha - alpha.current) * k;
-    goal.current.set(b.tint);
+    alpha.current += ((light ? b.alpha * 0.72 : b.alpha) - alpha.current) * k;
+    goal.current.set(light ? "#6B6A63" : b.tint);
     tint.current.lerp(goal.current, k);
 
     const mat = p.material as THREE.PointsMaterial;
@@ -90,8 +94,6 @@ export function Particles({ count }: { count: number }) {
     mat.color.copy(tint.current);
     mat.visible = alpha.current > 0.01;
 
-    // Rain reads as streaks; everything else stays round.
-    p.scale.y = 1;
     p.rotation.y = world.air === "rain" ? 0 : t * 0.01;
   });
 

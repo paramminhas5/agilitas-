@@ -44,9 +44,12 @@ export function Ground() {
     const g = resolveWorld(raw.world).ground;
     const k = Math.min(1, dt * 1.5);
 
-    goal.current.set(g ? g.color : "#0A0C0F");
+    // On paper the floor has to be a pale tone, or it reads as a black hole
+    // punched through the middle of a Lotto section.
+    const light = raw.mode === "light";
+    goal.current.set(g ? (light ? "#DED9CF" : g.color) : light ? "#E8E4DB" : "#0A0C0F");
     tint.current.lerp(goal.current, k);
-    alpha.current += ((g ? g.opacity : 0) - alpha.current) * k;
+    alpha.current += ((g ? (light ? g.opacity * 0.7 : g.opacity) : 0) - alpha.current) * k;
     rough.current += ((g ? g.rough : 0.8) - rough.current) * k;
     metal.current += ((g ? g.metal : 0.05) - metal.current) * k;
     gridFade.current += ((g && g.grid ? 1 : 0) - gridFade.current) * k;

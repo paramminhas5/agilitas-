@@ -1,6 +1,7 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { accentFor } from "./theme";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    Tiny shared store. Bridges DOM scroll state <-> WebGL scene without
@@ -32,6 +33,8 @@ export type SceneState = {
   world: string;
   /** which shoe silhouette the object should currently be */
   formId: string;
+  /** surface mode of the section holding the viewport: Lotto light, one8 dark */
+  mode: "light" | "dark";
 };
 
 const state: SceneState = {
@@ -46,6 +49,7 @@ const state: SceneState = {
   py: 0,
   world: "hero",
   formId: "alleys",
+  mode: "dark",
 };
 
 /**
@@ -108,5 +112,9 @@ export function useSceneValue<T>(pick: (s: SceneState) => T): T {
   );
 }
 
-/** Colour the hero object should currently render. */
-export const activeAccent = () => state.custom ?? state.accent;
+/**
+ * Colour the object should currently render, corrected for the surface it is
+ * sitting on. An accent picked for near-black needs darkening on paper.
+ */
+export const activeAccent = () =>
+  accentFor(state.custom ?? state.accent, state.mode);

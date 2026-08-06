@@ -842,3 +842,110 @@ img { display: block; max-width: 100%; height: auto; }
 .berth__why { font-size: 0.94rem; }
 .deck { grid-template-columns: repeat(3, 1fr); margin-top: 2rem; }
 @media(max-width: 760px) { .deck { grid-template-columns: 1fr; } }
+
+
+/* ═══ ASSET SLOTS ══════════════════════════════════════════════════════════
+   An empty slot is a labelled frame, not a broken image. It states the file
+   it wants, so the site reads as a spec while the shoot is still in flight.
+   ═════════════════════════════════════════════════════════════════════════ */
+.slotframe {
+  position: relative; width: 100%;
+  background:
+    repeating-linear-gradient(-45deg, transparent 0 13px, rgba(237,235,230,0.018) 13px 26px);
+}
+.slotframe__c { position: absolute; width: 14px; height: 14px; }
+.slotframe__c--tl { top: 0; left: 0; border-top: 1px solid var(--hair-2); border-left: 1px solid var(--hair-2); }
+.slotframe__c--tr { top: 0; right: 0; border-top: 1px solid var(--hair-2); border-right: 1px solid var(--hair-2); }
+.slotframe__c--bl { bottom: 0; left: 0; border-bottom: 1px solid var(--hair-2); border-left: 1px solid var(--hair-2); }
+.slotframe__c--br { bottom: 0; right: 0; border-bottom: 1px solid var(--hair-2); border-right: 1px solid var(--hair-2); }
+.slotframe__note,
+.slotframe__path {
+  position: absolute; left: 50%; transform: translateX(-50%);
+  font-family: var(--f-mono); font-size: 0.46rem; letter-spacing: 0.16em;
+  text-transform: uppercase; white-space: nowrap;
+}
+.slotframe__note { top: 50%; margin-top: -0.7rem; color: var(--dim); }
+.slotframe__path { top: 50%; margin-top: 0.35rem; color: var(--muted); }
+
+.asset { display: block; width: 100%; height: auto; object-fit: cover; }
+.asset--film { object-fit: cover; background: var(--carbon); }
+.asset--posterOnly { position: relative; overflow: hidden; }
+.asset--posterOnly img { width: 100%; height: 100%; object-fit: cover; }
+.asset__play {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-size: 1.4rem; color: var(--bone); text-shadow: 0 2px 18px rgba(0,0,0,0.6);
+}
+
+
+/* ═══ THE ICONS ════════════════════════════════════════════════════════════
+   Deliberately a different module from the eleven-shoe run: fewer elements,
+   far more scale, one number. It should read as a launch, not a listing.
+   ═════════════════════════════════════════════════════════════════════════ */
+.icon {
+  position: relative; min-height: 100svh;
+  display: grid; align-items: center;
+  padding: clamp(5rem, 12vh, 8rem) var(--pad);
+  border-top: 1px solid var(--hair);
+}
+.icon__inner {
+  width: 100%; max-width: 1480px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 0.92fr;
+  gap: clamp(2rem, 6vw, 6rem); align-items: center;
+}
+.icon__lead { position: relative; z-index: 3; }
+.icon__index {
+  font-family: var(--f-mono); font-size: 0.52rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 1.6rem;
+}
+.icon__formal {
+  font-family: var(--f-mono); font-size: 0.6rem; letter-spacing: 0.2em;
+  text-transform: uppercase; color: var(--accent, var(--signal));
+  margin-bottom: 0.7rem;
+}
+.icon__street {
+  font-family: var(--f-display); font-weight: 900;
+  font-size: clamp(2.6rem, 8vw, 7rem); line-height: 0.86;
+  letter-spacing: -0.05em; text-transform: uppercase;
+}
+.icon__line {
+  margin-top: 1.5rem; max-width: 34ch;
+  font-size: clamp(1rem, 1.6vw, 1.3rem); line-height: 1.5; color: var(--dim);
+}
+
+
+.icon__metric {
+  margin-top: 2.4rem; padding-top: 1.4rem;
+  border-top: 1px solid var(--hair-2); max-width: 30ch;
+}
+.icon__metric-n {
+  font-family: var(--f-display); font-weight: 900;
+  font-size: clamp(2.6rem, 6vw, 4.6rem); line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+.icon__metric-l {
+  font-family: var(--f-mono); font-size: 0.54rem; letter-spacing: 0.13em;
+  text-transform: uppercase; color: var(--muted); margin-top: 0.6rem;
+  line-height: 1.7;
+}
+.icon__cta { margin-top: 2.2rem; }
+.icon__stage { position: relative; width: 100%; }
+
+@media(max-width: 980px) {
+  .icon__inner { grid-template-columns: 1fr; }
+  .icon__stage { order: -1; max-width: 380px; margin: 0 auto; }
+}
+
+
+/* Lab media column: macro photograph over mechanism schematic */
+.lab__media { display: flex; flex-direction: column; gap: 0.9rem; align-self: center; }
+.lab__schematic { opacity: 0.85; }
+@media(max-width: 1180px) { .lab__media { display: none; } }
+
+
+/* Campaign treatment film */
+.scene__film { margin-top: 2rem; max-width: 44rem; }
+.scene__film-cap {
+  margin-top: 0.6rem;
+  font-family: var(--f-mono); font-size: 0.46rem; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--muted);
+}

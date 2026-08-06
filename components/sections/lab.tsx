@@ -6,6 +6,8 @@ import { Split } from "@/components/ui/split";
 import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
 import { isWetPlatform } from "@/lib/worlds";
+import { AssetImage } from "@/components/ui/asset";
+import { macroFor, schematicFor, wantMacro, wantSchematic } from "@/lib/assets";
 
 /** Cold colourways offered by the tuner. */
 const WAYS = [
@@ -66,16 +68,20 @@ export function Lab() {
     set({ tech: sel, world: isWetPlatform(technologies[sel].id) ? "lab:wet" : "lab" });
   }, [sel]);
 
+  /* A macro photograph, once one exists, outranks the 3D stand-in. */
+  const macro = macroFor(technologies[sel].id);
+  const schematic = schematicFor(technologies[sel].id);
+
   useEffect(() => {
     const el = track.current;
     if (!el) return;
     const io = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) claimStage(slot.current); },
+      ([e]) => { if (e.isIntersecting) claimStage(macro ? null : slot.current); },
       { threshold: 0.2 }
     );
     io.observe(el);
     return () => io.disconnect();
-  }, []);
+  }, [macro]);
 
   /** Clicking a platform scrolls to its position so scroll and state agree. */
   const jump = (i: number) => {
@@ -183,8 +189,28 @@ export function Lab() {
               </div>
             </div>
 
-            {/* Reserved box: the shoe explodes into layers here */}
-            <div className="slot lab__stage" ref={slot} aria-hidden />
+            {/* Media column: the shoe explodes into layers here, or the macro
+                photograph takes over once one has been shot. */}
+            <div className="lab__media">
+              <div className="slot lab__stage" ref={slot}>
+                <AssetImage
+                  src={macro}
+                  want={wantMacro(t.id)}
+                  alt={`${t.name} — macro detail`}
+                  ratio="1"
+                  note="Macro detail"
+                />
+              </div>
+              <div className="lab__schematic">
+                <AssetImage
+                  src={schematic}
+                  want={wantSchematic(t.id)}
+                  alt={`${t.name} — schematic`}
+                  ratio="16 / 9"
+                  note="Mechanism schematic"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>

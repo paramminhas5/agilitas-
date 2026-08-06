@@ -85,3 +85,29 @@ export function markPhase(el: Element, phase: Parameters<typeof set>[0]["phase"]
     onToggle: (s) => { if (s.isActive) set({ phase }); },
   });
 }
+
+/**
+ * Scrub a tall narrative track into discrete steps while preserving a smooth
+ * continuous progress value for a lightweight progress indicator.
+ */
+export function trackSteps(
+  el: Element,
+  count: number,
+  onStep: (index: number) => void,
+  onProgress?: (progress: number) => void,
+) {
+  let shown = -1;
+  return ScrollTrigger.create({
+    trigger: el,
+    start: "top top",
+    end: "bottom bottom",
+    onUpdate: (self) => {
+      const progress = Math.min(1, Math.max(0, self.progress));
+      const index = Math.min(count - 1, Math.floor(progress * count));
+      onProgress?.(progress);
+      if (index === shown) return;
+      shown = index;
+      onStep(index);
+    },
+  });
+}

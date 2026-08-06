@@ -67,7 +67,6 @@ export function Experience() {
       <RevealScope />
 
       <div className="rail" aria-hidden><div className="rail__fill" /></div>
-      <div className="page-signal" aria-hidden><span /></div>
 
       <nav className="nav" aria-label="Experience chapters">
         <button className="nav__mark" data-cur="Top" onClick={() => goTo("ground")} aria-label="Return to the beginning">

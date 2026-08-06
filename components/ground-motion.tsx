@@ -14,7 +14,7 @@ import { artFor, modelFor } from "@/lib/assets";
 import { SURFACES, DAY } from "@/lib/system-data";
 import { accentFor, modeForBrand } from "@/lib/theme";
 import { claimStage, set } from "@/lib/store";
-import { goTo } from "@/lib/scroll";
+import { goTo, trackSteps } from "@/lib/scroll";
 import { isWetPlatform } from "@/lib/worlds";
 
 import { AmbienceLayer } from "@/components/ui/ambience";
@@ -106,131 +106,257 @@ function Origin() {
   );
 }
 
-function BrandAxis({
-  brand,
-  title,
-  copy,
-  rows,
-  index,
-}: {
+type SystemStep = {
   brand: "LOTTO" | "ONE8";
+  axis: string;
   title: string;
-  copy: string;
-  rows: { k: string; v: string }[];
-  index: string;
-}) {
-  const mode = modeForBrand(brand);
-  return (
-    <article className={`gm-axis gm-axis--${brand.toLowerCase()}`} data-mode={mode}>
-      <div className="gm-axis__top">
-        <span className="gm-axis__index">{index}</span>
-        <BrandMark brand={brand} mode={mode} size={32} />
-      </div>
-      <h3>{title}</h3>
-      <p className="gm-axis__copy">{copy}</p>
-      <div className="gm-axis__ledger">
-        {rows.map((row, rowIndex) => (
-          <div className="gm-axis__row" key={row.k}>
-            <span>{String(rowIndex + 1).padStart(2, "0")}</span>
-            <strong>{row.k}</strong>
-            <p>{row.v}</p>
-          </div>
-        ))}
-      </div>
-    </article>
-  );
-}
+  body: string;
+  localIndex: number;
+  formId: "traktor" | "reverse";
+};
+
+const SYSTEM_STEPS: SystemStep[] = [
+  ...SURFACES.map((row, index) => ({
+    brand: "LOTTO" as const,
+    axis: "Engineered by surface",
+    title: row.k,
+    body: row.v,
+    localIndex: index,
+    formId: "traktor" as const,
+  })),
+  ...DAY.map((row, index) => ({
+    brand: "ONE8" as const,
+    axis: "Engineered by day",
+    title: row.k,
+    body: row.v,
+    localIndex: index,
+    formId: "reverse" as const,
+  })),
+];
 
 function BrandSystem() {
+  const [active, setActive] = useState(0);
+  const activeRef = useRef(0);
+  const track = useRef<HTMLElement>(null);
+  const sticky = useRef<HTMLDivElement>(null);
+  const slot = useRef<HTMLDivElement>(null);
+  const progress = useRef<HTMLSpanElement>(null);
+  const mobileArticles = useRef<Array<HTMLElement | null>>([]);
+  const step = SYSTEM_STEPS[active];
+  const mode = modeForBrand(step.brand);
+  const lottoArt = artFor("traktor");
+  const one8Art = artFor("reverse");
+  const activeArt = step.brand === "LOTTO" ? lottoArt : one8Art;
+
+  const showStep = (index: number) => {
+    const next = SYSTEM_STEPS[index];
+    if (!next || activeRef.current === index) return;
+    activeRef.current = index;
+    setActive(index);
+    claimStage(slot.current);
+    set({
+      mode: modeForBrand(next.brand),
+      world: `shoe:${next.formId}`,
+      formId: next.formId,
+      presence: 1,
+    });
+  };
+
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    const media = window.matchMedia("(min-width: 901px) and (prefers-reduced-motion: no-preference)");
+    let trigger: ReturnType<typeof trackSteps> | null = null;
+
+    const mount = () => {
+      trigger?.kill();
+      trigger = null;
+      if (!media.matches) {
+        claimStage(null);
+        set({ presence: 0 });
+        return;
+      }
+      trigger = trackSteps(
+        el,
+        SYSTEM_STEPS.length,
+        showStep,
+        (value) => {
+          if (progress.current) progress.current.style.transform = `scaleX(${value})`;
+          if (sticky.current) {
+            const handoff = Math.min(1, Math.max(0, (value - 0.44) / 0.12));
+            const eased = handoff * handoff * (3 - 2 * handoff);
+            sticky.current.dataset.surfaceLight = String(1 - eased);
+          }
+        },
+      );
+    };
+
+    mount();
+    media.addEventListener("change", mount);
+    return () => {
+      media.removeEventListener("change", mount);
+      trigger?.kill();
+    };
+    // The step table is static; ScrollTrigger owns this section's lifecycle.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 900px), (prefers-reduced-motion: reduce)");
+    let observer: IntersectionObserver | null = null;
+
+    const mount = () => {
+      observer?.disconnect();
+      observer = null;
+      if (!media.matches) return;
+      observer = new IntersectionObserver(
+        (entries) => {
+          const current = entries.find((entry) => entry.isIntersecting);
+          const brand = (current?.target as HTMLElement | undefined)?.dataset.brand as SystemStep["brand"] | undefined;
+          if (!brand) return;
+          const nextMode = modeForBrand(brand);
+          claimStage(null);
+          set({
+            mode: nextMode,
+            world: brand === "LOTTO" ? "shoe:traktor" : "shoe:reverse",
+            formId: brand === "LOTTO" ? "traktor" : "reverse",
+            presence: 0,
+          });
+        },
+        { rootMargin: "-32% 0px -52% 0px", threshold: 0 },
+      );
+      mobileArticles.current.forEach((article) => article && observer?.observe(article));
+    };
+
+    mount();
+    media.addEventListener("change", mount);
+    return () => {
+      media.removeEventListener("change", mount);
+      observer?.disconnect();
+    };
+  }, []);
+
   return (
     <Chapter
       id="system"
-      mode="light"
-      className="gm-system"
-      threshold={0.2}
+      mode={mode}
+      className={`gm-system gm-system--${step.brand.toLowerCase()}`}
+      threshold={0.08}
+      elRef={track}
+      surface={false}
       onEnter={() => {
-        claimStage(null);
-        set({ world: "brands", presence: 0 });
+        const interactive = window.matchMedia("(min-width: 901px) and (prefers-reduced-motion: no-preference)").matches;
+        claimStage(interactive ? slot.current : null);
+        set({
+          mode,
+          world: `shoe:${step.formId}`,
+          formId: step.formId,
+          presence: interactive ? 1 : 0,
+        });
       }}
     >
-      <div className="gm-wrap">
-        <SectionLabel n="02">Two ways forward</SectionLabel>
-        <div className="gm-system__head">
-          <h2>
-            <Split text="One country." stagger={28} />
-            <Split text="Two systems." className="gm-serif" stagger={32} delay={180} />
-          </h2>
-          <p className="rise rise-d2">
-            Lotto starts with where you play. one8 starts with how your whole day moves.
-            They meet where participation becomes progress.
-          </p>
+      <div className="gm-system__sticky" ref={sticky} data-surface-light="1">
+        <div className="gm-system__topline">
+          <span>02 / The product system</span>
+          <BrandMark brand={step.brand} mode={mode} size={30} />
         </div>
 
-        <div className="gm-system__axes">
-          <BrandAxis
-            brand="LOTTO"
-            index="A / SURFACE"
-            title="Engineered by surface."
-            copy="For everyone who plays — built backwards from the ground under them."
-            rows={SURFACES}
-          />
-          <BrandAxis
-            brand="ONE8"
-            index="B / DAY"
-            title="Engineered by day."
-            copy="For those getting better — training, playing, recovering and moving again."
-            rows={DAY}
-          />
-        </div>
-
-        <section className="gm-system__bridge" aria-label="The progression from Lotto to one8">
-          <div className="gm-bridge__header">
-            <span>THE PROGRESSION / ONE CONTINUOUS SYSTEM</span>
-            <p>Participation is the beginning. Progress is what keeps people moving.</p>
-          </div>
-
-          <div className="gm-bridge__path">
-            <article className="gm-bridge-card gm-bridge-card--lotto" data-mode="light">
-              <div className="gm-bridge-card__top">
-                <span>01 / ENTER THE GAME</span>
-                <BrandMark brand="LOTTO" mode="light" size={28} />
-              </div>
-              <strong className="gm-bridge-card__verb">LEARN</strong>
-              <h3>with Lotto.</h3>
-              <p>Start anywhere. Play on the surface you already have. Build confidence through access, repetition and joy.</p>
-              <div className="gm-bridge-card__proof">
-                <span><b>08</b> surface-led shoes</span>
-                <span><b>01</b> open door to play</span>
-              </div>
-            </article>
-
-            <div className="gm-bridge__connector" aria-hidden>
-              <span>A</span>
+        <div className="gm-system__stage">
+          <div
+            className="gm-system__copy"
+            key={`${step.brand}-${step.localIndex}`}
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <p className="gm-system__axis">{step.axis}</p>
+            <h2>{step.title}</h2>
+            <p className="gm-system__body">{step.body}</p>
+            <div className="gm-system__count">
+              <span>{String(step.localIndex + 1).padStart(2, "0")}</span>
               <i />
-              <strong>PLAY BECOMES PRACTICE</strong>
-              <i />
-              <span>B</span>
+              <span>05</span>
             </div>
-
-            <article className="gm-bridge-card gm-bridge-card--one8" data-mode="dark">
-              <div className="gm-bridge-card__top">
-                <span>02 / BUILD THE DAY</span>
-                <BrandMark brand="ONE8" mode="dark" size={28} />
-              </div>
-              <strong className="gm-bridge-card__verb">PROGRESS</strong>
-              <h3>with one8.</h3>
-              <p>Train with intent. Recover properly. Return stronger. Turn daily movement into a visible path forward.</p>
-              <div className="gm-bridge-card__proof">
-                <span><b>03</b> progression-led shoes</span>
-                <span><b>04</b> connected day states</span>
-              </div>
-            </article>
           </div>
 
-          <p className="gm-bridge__close">
-            Not two disconnected brands. <strong>One lifetime in motion.</strong>
-          </p>
-        </section>
+          <div
+            className={`gm-system__visual gm-system__visual--${step.brand.toLowerCase()}`}
+            data-step={step.localIndex}
+            ref={slot}
+          >
+            <div className="gm-system__surface" aria-hidden />
+            <OrbitSlot label={`Drag the ${step.brand === "LOTTO" ? "Traktor" : "Reverse"}`} />
+            {activeArt && (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                className="gm-system__product-image"
+                src={activeArt}
+                alt={`${step.brand === "LOTTO" ? "Traktor" : "Reverse"} product view`}
+              />
+            )}
+            <p className="gm-system__product-name">
+              {step.brand === "LOTTO" ? "Traktor" : "Reverse"}
+            </p>
+          </div>
+        </div>
+
+        <div className="gm-system__navigation">
+          <div className="gm-system__chapters" aria-label="Product-system chapters">
+            <span className={step.brand === "LOTTO" ? "is-active" : ""}>
+              <b>01</b> Where you play
+            </span>
+            <span className={step.brand === "ONE8" ? "is-active" : ""}>
+              <b>02</b> How your day moves
+            </span>
+          </div>
+          <div className="gm-system__progress" aria-hidden><span ref={progress} /></div>
+          <p>Scroll to explore the system</p>
+        </div>
+      </div>
+
+      <ol className="gm-system__a11y">
+        {SYSTEM_STEPS.map((item, index) => (
+          <li key={`${item.brand}-${item.localIndex}`}>
+            {index + 1}. {item.brand === "ONE8" ? "one8" : "Lotto"}: {item.title}. {item.body}
+          </li>
+        ))}
+      </ol>
+
+      <div className="gm-system__mobile">
+        {([
+          { brand: "LOTTO" as const, title: "Built from the ground up.", rows: SURFACES, art: lottoArt },
+          { brand: "ONE8" as const, title: "Built around the whole day.", rows: DAY, art: one8Art },
+        ]).map((group, groupIndex) => {
+          const groupMode = modeForBrand(group.brand);
+          return (
+            <article
+              key={group.brand}
+              data-mode={groupMode}
+              data-surface={groupMode}
+              data-brand={group.brand}
+              ref={(article) => { mobileArticles.current[groupIndex] = article; }}
+            >
+              <div className="gm-system__mobile-top">
+                <BrandMark brand={group.brand} mode={groupMode} size={28} />
+                <span>{group.brand === "LOTTO" ? "Engineered by surface" : "Engineered by day"}</span>
+              </div>
+              <h2>{group.title}</h2>
+              {group.art && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={group.art} alt="" />
+              )}
+              <div className="gm-system__mobile-list">
+                {group.rows.map((row, index) => (
+                  <div key={row.k}>
+                    <span>{String(index + 1).padStart(2, "0")}</span>
+                    <strong>{row.k}</strong>
+                    <p>{row.v}</p>
+                  </div>
+                ))}
+              </div>
+            </article>
+          );
+        })}
+        <p className="gm-system__mobile-close" data-surface="dark">Two brands. One clear product system.</p>
       </div>
     </Chapter>
   );
@@ -271,9 +397,6 @@ function IconScene({
       }}
     >
       <AmbienceLayer world={`shoe:${shoe.id}`} />
-      <div className="gm-icon__field" aria-hidden>
-        <span>{shoe.id === "alleys" ? "COURT" : shoe.id === "traktor" ? "WEATHER" : "CRICKET"}</span>
-      </div>
       <div className="gm-icon__grid">
         <div className="gm-icon__copy">
           <div className="gm-icon__meta rise">
@@ -305,10 +428,6 @@ function IconScene({
               <span>{shoe.name}</span>
             </div>
           )}
-          <div className="gm-icon__coordinates" aria-hidden>
-            <span>28.6139° N</span>
-            <span>77.2090° E</span>
-          </div>
         </div>
       </div>
     </Chapter>
@@ -380,9 +499,6 @@ function TechnologyTerrain({ onAtlas }: { onAtlas: (id: string) => void }) {
         });
       }}
     >
-      <div className="gm-terrain__contours" aria-hidden>
-        {Array.from({ length: 9 }).map((_, index) => <span key={index} />)}
-      </div>
       <div className="gm-wrap gm-terrain__inner">
         <SectionLabel n="04">Technology becomes terrain</SectionLabel>
         <div className="gm-terrain__head">
@@ -415,7 +531,6 @@ function TechnologyTerrain({ onAtlas }: { onAtlas: (id: string) => void }) {
 
           <div className="gm-tech__study" ref={slot}>
             <OrbitSlot label="Drag the material study" />
-            <div className="gm-tech__rings" aria-hidden><span /><span /><span /></div>
           </div>
 
           <div className="gm-tech__readout" key={technology.id}>

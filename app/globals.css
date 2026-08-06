@@ -881,7 +881,9 @@ img { display: block; max-width: 100%; height: auto; }
 .slotframe__note { top: 50%; margin-top: -0.7rem; color: var(--dim); }
 .slotframe__path { top: 50%; margin-top: 0.35rem; color: var(--muted); }
 
-.asset { display: block; width: 100%; height: auto; object-fit: cover; }
+/* contain, not cover: product shots arrive in whatever aspect they were shot
+   in, and cropping a shoe to fill a square is worse than letterboxing it. */
+.asset { display: block; width: 100%; height: 100%; object-fit: contain; }
 .asset--film { object-fit: cover; background: var(--carbon); }
 .asset--posterOnly { position: relative; overflow: hidden; }
 .asset--posterOnly img { width: 100%; height: 100%; object-fit: cover; }
@@ -1329,4 +1331,166 @@ img { display: block; max-width: 100%; height: auto; }
 @media (max-height: 560px) {
   .lab__sticky { position: static; height: auto; }
   .lab__track { height: auto; }
+}
+
+
+/* ═══ ORBIT SLOT ═══════════════════════════════════════════════════════════
+   The reserved box for a real 3D product, and the surface you drag on.
+   ═════════════════════════════════════════════════════════════════════════ */
+.orbit {
+  position: relative; width: 100%; aspect-ratio: 1;
+  pointer-events: auto; touch-action: none;
+  cursor: grab;
+  display: grid; align-items: end; justify-items: center;
+}
+.orbit.is-held { cursor: grabbing; }
+.orbit__hint {
+  padding-bottom: 0.4rem;
+  font-family: var(--f-mono); font-size: 0.46rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--muted);
+  opacity: 0; transform: translateY(4px);
+  transition: opacity 0.4s var(--ease), transform 0.4s var(--ease);
+}
+.orbit:hover .orbit__hint { opacity: 1; transform: none; }
+.orbit.is-held .orbit__hint { opacity: 0; }
+/* The custom cursor would hide the grab affordance. */
+html.has-cur .orbit { cursor: grab; }
+html.has-cur .orbit.is-held { cursor: grabbing; }
+
+
+/* ═══ PINNED BERTH ═════════════════════════════════════════════════════════
+   Each shoe holds still while its own argument assembles — why, then the
+   value, then A, then B, then S, then the specs — and only releases to the
+   next shoe once it is complete. 1.5 screens per shoe.
+   ═════════════════════════════════════════════════════════════════════════ */
+.berth {
+  min-height: 0;
+  height: 150svh;
+  padding: 0;
+  display: block;
+}
+.berth__pin {
+  position: sticky; top: 0;
+  height: 100svh;
+  display: grid; align-items: center;
+  padding: clamp(5rem, 12vh, 8rem) var(--pad);
+  overflow: hidden;
+}
+@media(min-width: 1101px) {
+  .berth { padding-left: 0; }
+  .berth__pin { padding-left: calc(var(--pad) + 3.2rem); }
+}
+
+/* Staged reveal, driven by scroll position rather than a timer. */
+.stg {
+  opacity: 0; transform: translateY(16px);
+  transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+}
+.stg.stg-in { opacity: 1; transform: none; }
+
+/* Progress through this one shoe, pinned to the foot of the section. */
+.berth__meter {
+  position: sticky; top: calc(100svh - 1px);
+  height: 1px; background: var(--hair);
+}
+.berth__meter span {
+  display: block; height: 100%; width: 100%;
+  transform-origin: left; transform: scaleX(0);
+  background: var(--accent, var(--signal));
+  transition: transform 0.45s var(--ease);
+}
+
+
+@media(max-width: 900px) {
+  /* No pinning on a phone: scrubbing fights the browser, so the berth is a
+     normal stacked panel and everything is simply shown. */
+  .berth { height: auto; }
+  .berth__pin {
+    position: static; height: auto;
+    padding: clamp(3.5rem, 9vh, 5rem) var(--pad);
+  }
+  .stg { opacity: 1; transform: none; }
+  .berth__meter { display: none; }
+}
+
+
+/* ═══ CAMPAIGN CASE STUDY ══════════════════════════════════════════════════
+   Press kit, not product page. Film full width, title overlapping its edge,
+   argument underneath in three columns. Deliberately the opposite silhouette
+   to a shoe berth.
+   ═════════════════════════════════════════════════════════════════════════ */
+.case {
+  position: relative; overflow: hidden;
+  padding-block: clamp(4.5rem, 11vh, 8rem);
+  border-top: 1px solid var(--hair);
+}
+.case__wash { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.case__inner { position: relative; z-index: 2; }
+
+.case__head {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 1.5rem; margin-bottom: 1.1rem;
+  border-bottom: 1px solid var(--hair); padding-bottom: 0.8rem;
+}
+.case__no,
+.case__shoe {
+  font-family: var(--f-mono); font-size: 0.52rem; letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.case__no { color: var(--muted); }
+.case__shoe { color: var(--signal); transition: opacity 0.3s var(--ease); }
+.case__shoe:hover { opacity: 0.6; }
+
+.case__plate {
+  position: relative; width: 100%;
+  border: 1px solid var(--hair-2);
+  background: var(--glass);
+  overflow: hidden;
+}
+
+/* The overlap. This is what stops it looking like a boxed panel. */
+.case__title {
+  position: relative; z-index: 3;
+  margin-top: clamp(-3.4rem, -4vw, -1.6rem);
+  padding-left: clamp(0.5rem, 2vw, 2rem);
+  max-width: 26ch;
+}
+.case__name {
+  font-family: var(--f-display); font-weight: 900;
+  font-size: clamp(1.9rem, 5.4vw, 4.2rem); line-height: 0.9;
+  letter-spacing: -0.045em; text-transform: uppercase;
+  text-shadow: 0 2px 30px rgba(0,0,0,0.35);
+}
+[data-mode="light"] .case__name { text-shadow: 0 2px 26px rgba(244,242,237,0.7); }
+.case__tag {
+  margin-top: 0.7rem; font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+  line-height: 1.45; color: var(--signal); font-style: italic;
+}
+
+
+.case__dossier {
+  margin-top: clamp(2.2rem, 5vh, 3.5rem);
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 1px; background: var(--hair);
+  border-top: 1px solid var(--hair); border-bottom: 1px solid var(--hair);
+}
+.case__col { padding: 1.5rem 1.6rem 1.7rem; background: transparent; }
+.case__k {
+  font-family: var(--f-mono); font-size: 0.52rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: var(--bone); margin-bottom: 0.7rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.case__k::after { content: ''; flex: 1; height: 1px; background: currentColor; opacity: 0.22; }
+.case__k--film { color: var(--ice); }
+.case__k--gtm { color: var(--ion); }
+.case__v { font-size: 0.88rem; line-height: 1.72; color: var(--dim); }
+
+/* The per-campaign wash is built for a dark surface; soften it on paper. */
+[data-mode="light"] .case__wash { opacity: 0.55; mix-blend-mode: multiply; }
+
+@media(max-width: 900px) {
+  .case__dossier { grid-template-columns: 1fr; }
+  .case__title { margin-top: -1.2rem; max-width: none; }
+  .case__col { padding: 1.2rem 0 1.4rem; }
+  .case__k::after { display: none; }
 }

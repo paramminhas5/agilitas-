@@ -21,12 +21,18 @@ type Props = {
   threshold?: number;
   onEnter?: () => void;
   style?: CSSProperties;
+  /** exposes the section element, for callers that need to measure it */
+  elRef?: React.RefObject<HTMLElement | null>;
 };
 
 export function Chapter({
-  mode, id, className = "", children, threshold = 0.35, onEnter, style,
+  mode, id, className = "", children, threshold = 0.35, onEnter, style, elRef,
 }: Props) {
   const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    if (elRef) elRef.current = ref.current;
+  }, [elRef]);
 
   useEffect(() => {
     const el = ref.current;

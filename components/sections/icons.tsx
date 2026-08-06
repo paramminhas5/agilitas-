@@ -6,16 +6,20 @@ import { Split } from "@/components/ui/split";
 import { AssetImage } from "@/components/ui/asset";
 import { Chapter } from "@/components/ui/chapter";
 import { BrandMark } from "@/components/ui/brand-mark";
-import { artFor, wantArt } from "@/lib/assets";
+import { artFor, wantArt, modelFor } from "@/lib/assets";
+import { OrbitSlot } from "@/components/ui/orbit-slot";
 import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
 import { accentFor, modeForBrand } from "@/lib/theme";
+import { useRef } from "react";
 
 function Icon({ item, n }: { item: IconProduct; n: number }) {
   const shoe = shoes.find((s) => s.id === item.shoeId);
   const art = artFor(item.shoeId);
+  const model = modelFor(item.shoeId);
   const mode = modeForBrand(item.brand);
   const accent = accentFor(shoe?.accent ?? "#A9C6D8", mode);
+  const slot = useRef<HTMLDivElement>(null);
 
   return (
     <Chapter
@@ -25,8 +29,8 @@ function Icon({ item, n }: { item: IconProduct; n: number }) {
       threshold={0.45}
       style={{ ["--accent" as string]: accent }}
       onEnter={() => {
-        // Photography is the hero here; the stand-in stays out of the frame.
-        claimStage(null);
+        // Model, then photograph, then labelled frame.
+        claimStage(model ? slot.current : null);
         set({ world: `shoe:${item.shoeId}`, formId: item.shoeId });
       }}
     >
@@ -58,15 +62,19 @@ function Icon({ item, n }: { item: IconProduct; n: number }) {
           </button>
         </div>
 
-        <div className="icon__stage">
-          <AssetImage
-            src={art}
-            want={wantArt(item.shoeId)}
-            alt={`${item.formal} — ${shoe?.subtitle ?? ""}`}
-            ratio="1"
-            note="Hero product"
-            priority={n === 1}
-          />
+        <div className="icon__stage" ref={slot}>
+          {model ? (
+            <OrbitSlot label="Drag to turn" />
+          ) : (
+            <AssetImage
+              src={art}
+              want={wantArt(item.shoeId)}
+              alt={`${item.formal} — ${shoe?.subtitle ?? ""}`}
+              ratio="1"
+              note="Hero product"
+              priority={n === 1}
+            />
+          )}
         </div>
       </div>
     </Chapter>

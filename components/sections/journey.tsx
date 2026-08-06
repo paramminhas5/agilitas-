@@ -8,7 +8,8 @@ import { BrandMark } from "@/components/ui/brand-mark";
 import { AssetImage } from "@/components/ui/asset";
 import { goTo } from "@/lib/scroll";
 import { set, claimStage } from "@/lib/store";
-import { artFor, wantArt } from "@/lib/assets";
+import { artFor, wantArt, modelFor } from "@/lib/assets";
+import { OrbitSlot } from "@/components/ui/orbit-slot";
 import { accentFor, modeForBrand } from "@/lib/theme";
 
 const LOTTO = shoes.filter((s) => s.brand === "LOTTO");
@@ -39,25 +40,74 @@ function BrandBreak({
 }
 
 
+/**
+ * Scroll position inside a pinned berth, expressed as a reveal step. The berth
+ * holds still while its own content assembles, then releases to the next shoe.
+ * Pinning is skipped on narrow viewports, where scrubbing fights the browser —
+ * there the whole panel is simply shown.
+ */
+function useBerthStep(track: React.RefObject<HTMLElement | null>, steps = 5) {
+  const [step, setStep] = useState(0);
+
+  useEffect(() => {
+    const el = track.current;
+    if (!el) return;
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      setStep(steps);
+      return;
+    }
+    let frame = 0;
+    const read = () => {
+      frame = 0;
+      const r = el.getBoundingClientRect();
+      const span = r.height - window.innerHeight;
+      if (span <= 0) return setStep(steps);
+      const p = Math.min(1, Math.max(0, -r.top / span));
+      const next = Math.min(steps, Math.floor(p * (steps + 1)));
+      setStep((prev) => (prev === next ? prev : next));
+    };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(read); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    read();
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [track, steps]);
+
+  return step;
+}
+
 function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (i: number) => void }) {
   const techs = technologies.filter((t) => shoe.technologies.includes(t.id));
   const art = artFor(shoe.id);
+  const model = modelFor(shoe.id);
   const mode = modeForBrand(shoe.brand);
   const accent = accentFor(shoe.accent, mode);
+  const slot = useRef<HTMLDivElement>(null);
+  const track = useRef<HTMLElement>(null);
+  const step = useBerthStep(track);
+  const on = (n: number) => (step >= n ? "stg-in" : "");
 
   return (
     <Chapter
       mode={mode}
       id={`shoe-${shoe.id}`}
       className="berth"
-      threshold={0.5}
+      threshold={0.35}
+      elRef={track}
       style={{ ["--accent" as string]: accent }}
       onEnter={() => {
         onEnter(index);
-        claimStage(null);
+        // Model, then photograph, then labelled frame. Only a real model takes
+        // the slot; where there is a photograph it owns the frame outright.
+        claimStage(model ? slot.current : null);
         set({ world: `shoe:${shoe.id}`, formId: shoe.id });
       }}
     >
+      <div className="berth__pin">
       <div className="berth__inner" style={{ ["--accent" as string]: accent }}>
         <div className="berth__lead">
           <div className="berth__badge" style={{ color: accent, borderColor: `${accent}55` }}>
@@ -68,11 +118,11 @@ function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (
             <Split text={shoe.name} stagger={34} />
           </h2>
           <p className="berth__sub">{shoe.subtitle}</p>
-          <p className="berth__why">{shoe.whyWeMadeIt}</p>
+          <p className={`berth__why stg ${on(1)}`}>{shoe.whyWeMadeIt}</p>
 
           {/* The value, labelled. It was already here as the statement line,
               but without its label it stopped reading as the value. */}
-          <div className="berth__value rise">
+          <div className={`berth__value stg ${on(1)}`}>
             <span className="berth__value-k">The value</span>
             <p className="berth__value-v">{shoe.value}</p>
           </div>
@@ -80,17 +130,15 @@ function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (
 
           {/* Each cell arrives on its own, so the panel assembles as you
               scroll rather than appearing complete. */}
+          {/* A, then B, then S — each arrives on its own as you scroll the
+              pinned berth, so the argument is made in order. */}
           <div className="deck">
             {([
               ["A", shoe.purposeA],
               ["B", shoe.purposeB],
               ["S", shoe.purposeS],
             ] as const).map(([code, p], i) => (
-              <div
-                className="deck__cell rise"
-                key={code}
-                style={{ transitionDelay: `${120 + i * 130}ms` }}
-              >
+              <div className={`deck__cell stg ${on(2 + i)}`} key={code}>
                 <span className={`deck__code deck__code--${code.toLowerCase()}`}>{code}</span>
                 <div className="deck__label">{p.label}</div>
                 <div className="deck__text">{p.description}</div>
@@ -99,17 +147,17 @@ function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (
           </div>
 
           <div className="strip">
-            <div className="strip__cell rise" style={{ transitionDelay: "540ms" }}>
+            <div className={`strip__cell stg ${on(5)}`}>
               <div className="strip__title">Features &amp; specs</div>
               <div className="strip__text">{shoe.features}</div>
             </div>
-            <div className="strip__cell rise" style={{ transitionDelay: "650ms" }}>
+            <div className={`strip__cell stg ${on(5)}`}>
               <div className="strip__title">Who it&apos;s for</div>
               <div className="strip__text">{shoe.whoItsFor}</div>
             </div>
           </div>
 
-          <div className="berth__chips rise" style={{ transitionDelay: "760ms" }}>
+          <div className={`berth__chips stg ${on(5)}`}>
             {techs.map((t) => (
               <button key={t.id} className="chip" data-cur="Inspect" onClick={() => goTo("lab")}>
                 {t.name}
@@ -118,15 +166,25 @@ function Berth({ shoe, index, onEnter }: { shoe: Shoe; index: number; onEnter: (
           </div>
         </div>
 
-        <div className="berth__void">
-          <AssetImage
-            src={art}
-            want={wantArt(shoe.id)}
-            alt={`${shoe.name} — ${shoe.subtitle}`}
-            ratio="1"
-            note={`${shoe.name} · product art`}
-          />
+        <div className="berth__void" ref={slot}>
+          {model ? (
+            <OrbitSlot />
+          ) : (
+            <AssetImage
+              src={art}
+              want={wantArt(shoe.id)}
+              alt={`${shoe.name} — ${shoe.subtitle}`}
+              ratio="1"
+              note={`${shoe.name} · product art`}
+            />
+          )}
         </div>
+      </div>
+      </div>
+
+      {/* Progress through this one shoe */}
+      <div className="berth__meter" aria-hidden>
+        <span style={{ transform: `scaleX(${step / 5})` }} />
       </div>
     </Chapter>
   );

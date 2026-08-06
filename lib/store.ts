@@ -35,6 +35,11 @@ export type SceneState = {
   formId: string;
   /** surface mode of the section holding the viewport: Lotto light, one8 dark */
   mode: "light" | "dark";
+  /** accumulated hand-rotation of the model, radians. Written per pointer
+   *  move, so kept out of React updates. */
+  dragX: number;
+  dragY: number;
+  dragging: boolean;
 };
 
 const state: SceneState = {
@@ -50,6 +55,9 @@ const state: SceneState = {
   world: "hero",
   formId: "alleys",
   mode: "dark",
+  dragX: 0,
+  dragY: 0,
+  dragging: false,
 };
 
 /**

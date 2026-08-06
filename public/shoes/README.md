@@ -9,6 +9,14 @@
 The scanner runs before every `dev` and `build`, finds the file, and the shoe
 switches from the 3D stand-in to your photograph automatically.
 
+**Priority per shoe:** a `.glb` in `/public/models` wins → then an image here →
+then a labelled placeholder frame. So a shoe with both a model and a photo
+shows the model, and the photo waits in reserve.
+
+**Prefer `.webp`.** The three shots currently here started as PNGs totalling
+4.7 MB; as WebP they are 196 KB with no visible difference. On an Indian
+mobile connection that gap is the whole first impression.
+
 | Setting | Value |
 |---|---|
 | Filename | `<shoe-id>.png` (also accepts `.jpg`, `.webp`, `.avif`) |

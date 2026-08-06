@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { Component, Suspense, useEffect, useMemo, useRef, type ReactNode } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { raw, stage as stageSlot, useSceneValue } from "@/lib/store";
 import { resolveWorld } from "@/lib/worlds";
 import { budget, type Tier } from "@/lib/perf";
+import { modelFor } from "@/lib/assets";
+import { Model } from "./model";
 import { Study } from "./study";
 import { Shards } from "./shards";
 import { Particles } from "./particles";
@@ -18,6 +20,26 @@ const DRIFT: Record<string, [number, number]> = {
   foot: [0.0, -0.4],
 };
 
+/**
+ * A malformed or missing .glb must not take the canvas down with it. On
+ * failure this quietly falls through to whatever is passed as the fallback.
+ */
+class ModelBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch(err: unknown) {
+    console.warn("[stage] model failed to load, falling back", err);
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+
 function Rig({ tier, shards }: { tier: Tier; shards: number }) {
   const holder = useRef<THREE.Group>(null);
   const content = useRef<THREE.Group>(null);
@@ -25,30 +47,37 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
   const fill = useRef<THREE.PointLight>(null);
   const amb = useRef<THREE.AmbientLight>(null);
   const formId = useSceneValue((s) => s.formId);
+  const modelPath = modelFor(formId);
 
   /* The object's true size, measured rather than assumed. A bounding sphere,
      not a width: the object rotates, so only a radius guarantees it stays
      inside its slot at every angle. Assuming a fixed length is what let it
      bleed off the right edge of the page. */
   const radius = useRef(1.5);
+  const settle = useRef(0);
+  const ticks = useRef(0);
+
+  const measure = () => {
+    const h = holder.current;
+    const c = content.current;
+    if (!h || !c) return;
+    const keep = h.scale.clone();
+    h.scale.set(1, 1, 1);
+    h.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(c);
+    const sphere = box.getBoundingSphere(new THREE.Sphere());
+    if (sphere.radius > 0.01) radius.current = sphere.radius;
+    h.scale.copy(keep);
+    h.updateMatrixWorld(true);
+  };
+
+  // Models arrive asynchronously, so one measurement on change is not enough:
+  // re-measure a few times while the object settles in.
   useEffect(() => {
-    let raf = 0;
-    const measure = () => {
-      const h = holder.current;
-      const c = content.current;
-      if (!h || !c) return;
-      const keep = h.scale.clone();
-      h.scale.set(1, 1, 1);
-      h.updateMatrixWorld(true);
-      const box = new THREE.Box3().setFromObject(c);
-      const sphere = box.getBoundingSphere(new THREE.Sphere());
-      if (sphere.radius > 0.01) radius.current = sphere.radius;
-      h.scale.copy(keep);
-      h.updateMatrixWorld(true);
-    };
-    raf = requestAnimationFrame(measure);
+    settle.current = 10;
+    const raf = requestAnimationFrame(measure);
     return () => cancelAnimationFrame(raf);
-  }, [formId, tier]);
+  }, [formId, tier, modelPath]);
 
   const keyCol = useRef(new THREE.Color("#EDEBE6"));
   const fillCol = useRef(new THREE.Color("#8A7CFF"));
@@ -75,6 +104,12 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
     const cam = st.camera as THREE.PerspectiveCamera;
     const world = resolveWorld(raw.world);
     const k = Math.min(1, dt * 2.2);
+
+    ticks.current++;
+    if (settle.current > 0 && ticks.current % 8 === 0) {
+      settle.current--;
+      measure();
+    }
 
     /* Camera: fixed dolly with a little pointer parallax. */
     cam.position.x += (raw.px * 0.3 - cam.position.x) * Math.min(1, dt * 1.1);
@@ -162,7 +197,17 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
 
       <group ref={holder}>
         <group ref={content}>
-          <Study tier={tier} />
+          {/* A real product model wins. Otherwise the material study, which
+              only shows itself in the hero and the lab. */}
+          {modelPath ? (
+            <ModelBoundary key={modelPath} fallback={<Study tier={tier} />}>
+              <Suspense fallback={null}>
+                <Model path={modelPath} />
+              </Suspense>
+            </ModelBoundary>
+          ) : (
+            <Study tier={tier} />
+          )}
         </group>
         {shards > 0 && <Shards tier={tier} count={shards} />}
       </group>

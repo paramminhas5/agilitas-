@@ -85,6 +85,8 @@ img { display: block; max-width: 100%; height: auto; }
   position: fixed; inset: 0; z-index: 0;
   pointer-events: none;
 }
+/* The canvas is transparent, so sitting above the backdrop is correct; it must
+   never sit above the copy. */
 .stage canvas { display: block; }
 
 /* Everything DOM sits above the stage */
@@ -1029,8 +1031,23 @@ img { display: block; max-width: 100%; height: auto; }
 /* Surfaces that were "glass over black" need to read as ink on paper. */
 [data-mode="light"] .grain { opacity: 0.035; mix-blend-mode: multiply; }
 [data-mode="light"] .dossier__cell { background: rgba(244, 242, 237, 0.78); }
-[data-mode="light"] .dock,
-[data-mode="light"] .nav { background: transparent; }
+
+/* The fixed chrome lives outside any section, so it takes its mode from the
+   shell. Same design in both — it just has to stay legible when the page
+   turns to paper. */
+.shell[data-mode="light"] .nav {
+  background: linear-gradient(to bottom, rgba(244, 242, 237, 0.94), rgba(244, 242, 237, 0));
+}
+.shell[data-mode="light"] .nav__item { color: rgba(10, 12, 14, 0.5); }
+.shell[data-mode="light"] .nav__item:hover,
+.shell[data-mode="light"] .nav__item.is-on { color: #0A0C0E; }
+.shell[data-mode="light"] .nav__mark { color: #0A0C0E; }
+.shell[data-mode="light"] .nav__pdf { color: #0A0C0E; border-color: rgba(10, 12, 14, 0.2); }
+.shell[data-mode="light"] .dock {
+  background: rgba(244, 242, 237, 0.86); color: #0A0C0E;
+  border-color: rgba(10, 12, 14, 0.2);
+}
+.shell[data-mode="light"] .rail { background: rgba(10, 12, 14, 0.1); }
 
 /* The copy scrim is a dark wash; in light mode it must be a pale one. */
 [data-mode="light"] .berth__lead::before,
@@ -1049,14 +1066,19 @@ img { display: block; max-width: 100%; height: auto; }
    so the whole page turns over at a brand boundary while the canvas keeps
    drawing on top of it.
    ═════════════════════════════════════════════════════════════════════════ */
+/* z-index -1, not 0. A fixed, opaque element at z-index 0 paints above the
+   in-flow content of its siblings, so at 0 this plane covered every piece of
+   plain text on the page — only elements with their own layer survived. */
 .backdrop {
-  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background: #050608;
   transition: background-color 0.75s var(--ease);
 }
 .backdrop.is-light { background: #F4F2ED; }
 
-.stage { z-index: 1; }
+/* Guard: layout containers carry their own layer so no fixed plane can ever
+   paint over their contents again. */
+.wrap, .side__inner, .creed, .bridge__inner, .chapmark__inner { position: relative; z-index: 1; }
 
 
 /* ═══ BRAND MARK ═══════════════════════════════════════════════════════════ */

@@ -36,6 +36,8 @@ export function Experience() {
   const [ready, setReady] = useState(false);
   const shell = useRef<HTMLDivElement>(null);
   const phase = useSceneValue((s) => s.phase);
+  // Drives the fixed chrome only; sections set their own mode.
+  const mode = useSceneValue((s) => s.mode);
 
   useSmoothScroll(tier !== "off");
 
@@ -68,7 +70,7 @@ export function Experience() {
   }, []);
 
   return (
-    <div className="shell" ref={shell}>
+    <div className="shell" ref={shell} data-mode={mode}>
       <Backdrop />
       {ready && <Stage tier={tier} />}
 

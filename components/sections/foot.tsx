@@ -5,7 +5,7 @@ import { goTo } from "@/lib/scroll";
 
 export function Foot({ onPdf, busy }: { onPdf: () => void; busy: boolean }) {
   return (
-    <footer className="foot vent" id="foot">
+    <footer className="foot vent" id="foot" data-mode="dark">
       <div className="foot__grid">
         <div>
           <div className="foot__mark chrome">AGILITAS</div>

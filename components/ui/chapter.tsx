@@ -23,10 +23,12 @@ type Props = {
   style?: CSSProperties;
   /** exposes the section element, for callers that need to measure it */
   elRef?: React.RefObject<HTMLElement | null>;
+  /** override backdrop surface reporting; false lets a child report a blend */
+  surface?: Mode | false;
 };
 
 export function Chapter({
-  mode, id, className = "", children, threshold = 0.35, onEnter, style, elRef,
+  mode, id, className = "", children, threshold = 0.35, onEnter, style, elRef, surface,
 }: Props) {
   const ref = useRef<HTMLElement>(null);
 
@@ -57,7 +59,7 @@ export function Chapter({
       id={id}
       className={className}
       data-mode={mode}
-      data-surface={mode}
+      data-surface={surface === false ? undefined : (surface ?? mode)}
       style={style}
     >
       {children}
@@ -86,10 +88,15 @@ export function Backdrop() {
     const read = () => {
       const vh = window.innerHeight || 1;
       let lit = 0;
-      document.querySelectorAll<HTMLElement>("[data-surface]").forEach((s) => {
+      document.querySelectorAll<HTMLElement>("[data-surface], [data-surface-light]").forEach((s) => {
         const r = s.getBoundingClientRect();
         const vis = Math.min(vh, r.bottom) - Math.max(0, r.top);
-        if (vis > 0 && s.dataset.surface === "light") lit += vis;
+        if (vis <= 0) return;
+        const declared = s.dataset.surfaceLight;
+        const strength = declared === undefined
+          ? (s.dataset.surface === "light" ? 1 : 0)
+          : Math.min(1, Math.max(0, Number(declared) || 0));
+        lit += vis * strength;
       });
       const f = Math.min(1, Math.max(0, lit / vh));
       raw.light = f;

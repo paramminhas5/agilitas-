@@ -35,6 +35,9 @@ export type SceneState = {
   formId: string;
   /** surface mode of the section holding the viewport: Lotto light, one8 dark */
   mode: "light" | "dark";
+  /** 0 = hidden, 1 = fully present. Lets narrative sections clear the stage
+   *  without unmounting the persistent WebGL world. */
+  presence: number;
   /** accumulated hand-rotation of the model, radians. Written per pointer
    *  move, so kept out of React updates. */
   dragX: number;
@@ -59,6 +62,7 @@ const state: SceneState = {
   world: "hero",
   formId: "alleys",
   mode: "dark",
+  presence: 1,
   dragX: 0,
   dragY: 0,
   dragging: false,

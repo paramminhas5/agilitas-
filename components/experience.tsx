@@ -3,31 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
-import { Cursor, RevealScope } from "@/components/ui/cursor";
+import { EntryRitual, GroundMotion } from "@/components/ground-motion";
 import { Backdrop } from "@/components/ui/chapter";
-import { Hero } from "@/components/sections/hero";
-import { Vision } from "@/components/sections/vision";
-import { System } from "@/components/sections/system";
-import { Icons } from "@/components/sections/icons";
-import { Lab } from "@/components/sections/lab";
-import { Journey } from "@/components/sections/journey";
-import { Scenes } from "@/components/sections/scenes";
-import { Foot } from "@/components/sections/foot";
-
-import { useTier } from "@/lib/perf";
-import { useSmoothScroll, goTo, markPhase } from "@/lib/scroll";
+import { Cursor, RevealScope } from "@/components/ui/cursor";
 import { usePdf } from "@/lib/pdf";
-import { useSceneValue } from "@/lib/store";
+import { useTier } from "@/lib/perf";
+import { goTo, markPhase, useSmoothScroll } from "@/lib/scroll";
+import { useSceneValue, type Phase } from "@/lib/store";
 
-/* WebGL never renders on the server, and never blocks first paint. */
 const Stage = dynamic(() => import("@/components/webgl/stage"), { ssr: false });
 
-const NAV = [
-  { id: "system", label: "The Two" },
-  { id: "icons", label: "The Icons" },
-  { id: "lab", label: "Technology" },
-  { id: "journey", label: "The Eleven" },
-  { id: "scenes", label: "Campaigns" },
+const NAV: { id: string; phase: Phase; label: string }[] = [
+  { id: "ground", phase: "hero", label: "Ground" },
+  { id: "system", phase: "brands", label: "The Two" },
+  { id: "icons", phase: "icons", label: "Icons" },
+  { id: "terrain", phase: "lab", label: "Terrain" },
+  { id: "culture", phase: "scenes", label: "Culture" },
 ];
 
 export function Experience() {
@@ -35,95 +26,77 @@ export function Experience() {
   const { gen, busy } = usePdf();
   const [ready, setReady] = useState(false);
   const shell = useRef<HTMLDivElement>(null);
-  const phase = useSceneValue((s) => s.phase);
-  // Drives the fixed chrome only; sections set their own mode.
-  const mode = useSceneValue((s) => s.mode);
+  const phase = useSceneValue((state) => state.phase);
+  const mode = useSceneValue((state) => state.mode);
 
   useSmoothScroll(tier !== "off");
 
-  // Defer the canvas one paint so copy lands first.
   useEffect(() => {
-    const t = setTimeout(() => setReady(true), 60);
-    return () => clearTimeout(t);
+    const timer = window.setTimeout(() => setReady(true), 80);
+    return () => window.clearTimeout(timer);
   }, []);
 
-
-  // Report which macro region owns the viewport, so the 3D rig knows where to sit.
   useEffect(() => {
-    const map: [string, Parameters<typeof markPhase>[1]][] = [
-      ["hero", "hero"],
-      ["vision", "brands"],
+    const map: [string, Phase][] = [
+      ["ground", "hero"],
       ["system", "brands"],
       ["icons", "icons"],
-      ["lab", "lab"],
-      ["journey", "journey"],
-      ["scenes", "scenes"],
+      ["terrain", "lab"],
+      ["atlas", "lab"],
+      ["culture", "scenes"],
       ["foot", "foot"],
     ];
     const triggers = map
-      .map(([id, p]) => {
-        const el = document.getElementById(id);
-        return el ? markPhase(el, p) : null;
+      .map(([id, region]) => {
+        const element = document.getElementById(id);
+        return element ? markPhase(element, region) : null;
       })
       .filter(Boolean) as { kill: () => void }[];
-    return () => triggers.forEach((t) => t.kill());
+    return () => triggers.forEach((trigger) => trigger.kill());
   }, []);
 
   return (
     <div className="shell" ref={shell} data-mode={mode}>
+      <a className="skip-link" href="#main-content">Skip to the experience</a>
       <Backdrop />
       {ready && <Stage tier={tier} />}
 
       <div className="grain" aria-hidden />
+      <div className="edge-vignette" aria-hidden />
       <Cursor />
       <RevealScope />
+      <EntryRitual />
 
-      <div className="rail" aria-hidden>
-        <div className="rail__fill" />
-      </div>
+      <div className="rail" aria-hidden><div className="rail__fill" /></div>
+      <div className="page-signal" aria-hidden><span /></div>
 
-      <nav className="nav">
-        <button className="nav__mark" data-cur="Top" onClick={() => goTo("hero")}>
-          Agilitas
+      <nav className="nav" aria-label="Experience chapters">
+        <button className="nav__mark" data-cur="Top" onClick={() => goTo("ground")} aria-label="Return to the beginning">
+          <span>AG</span>
+          <span>Agilitas</span>
         </button>
         <div className="nav__set">
-          {NAV.map((n) => (
+          {NAV.map((item, index) => (
             <button
-              key={n.id}
-              className={`nav__item ${phase === n.id ? "is-on" : ""}`}
+              key={item.id}
+              className={`nav__item ${phase === item.phase ? "is-on" : ""}`}
               data-cur="Go"
-              onClick={() => goTo(n.id)}
+              onClick={() => goTo(item.id)}
+              aria-current={phase === item.phase ? "location" : undefined}
             >
-              {n.label}
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              {item.label}
             </button>
           ))}
         </div>
         <button className="nav__pdf" data-cur="Save" onClick={gen} disabled={busy}>
-          {busy ? "Generating…" : "Download PDF"}
+          {busy ? "Building…" : "Full pitch"}
         </button>
       </nav>
 
-
-      <main>
-        <Hero />
-        <Vision />
-        <System />
-        <Icons />
-        <Lab />
-        <div className="hair" />
-        <Journey />
-        <div className="hair" />
-        <Scenes />
+      <main id="main-content">
+        <GroundMotion onPdf={gen} busy={busy} />
       </main>
-
-      <Foot onPdf={gen} busy={busy} />
-
-      <button className="dock" data-cur="Save" onClick={gen} disabled={busy}>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-        </svg>
-        {busy ? "…" : "PDF"}
-      </button>
     </div>
   );
 }

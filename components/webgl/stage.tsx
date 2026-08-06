@@ -153,8 +153,9 @@ function Rig({ tier, shards }: { tier: Tier; shards: number }) {
       fitScale.current += (0.6 - fitScale.current) * k;
     }
 
+    h.visible = raw.presence > 0.01;
     h.position.lerp(want, Math.min(1, dt * 1.9));
-    h.scale.setScalar(fitScale.current);
+    h.scale.setScalar(fitScale.current * raw.presence);
 
 
     /* Light rig and air are properties of the world, eased between. */
